@@ -1,0 +1,1 @@
+"use strict";(self.webpackChunkdocs=self.webpackChunkdocs||[]).push([[626],{4410:e=>{e.exports=JSON.parse('{"sourceUrl":"https://github.com/NeonD00m/feces/blob/main","baseUrl":"/feces/","classOrder":[["feces"]],"apiCategories":[]}')}}]);
