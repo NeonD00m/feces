@@ -1,5 +1,5 @@
 name = "killergg/feces"
-version = "1.1.2"
+version = "1.2.2"
 description = "Fast Entity Component Export System: Generalized Replication for jecs."
 authors = ["NeonD00m", "as8d"]
 repository = "https://github.com/neond00m/feces"
@@ -20,9 +20,6 @@ build_files = ["src"]
 [indices]
 default = "https://github.com/pesde-pkg/index"
 
-[wally_indices]
-default = "https://github.com/UpliftGames/wally-index"
-
 [scripts]
 roblox_sync_config_generator = ".pesde/scripts/roblox_sync_config_generator.luau"
 sourcemap_generator = ".pesde/scripts/sourcemap_generator.luau"
@@ -32,7 +29,7 @@ scripts = { name = "pesde/scripts_rojo", version = "^0.1.0", target = "lune" }
 rojo = { name = "pesde/rojo", version = "^7.4.4", target = "lune" }
 
 [dependencies]
-jecs = { wally = "wally#ukendio/jecs", version = "^0.5.5" }
+jecs = { wally = "marked/jecs", version = "^0.5.5" }
 world = { name = "killergg/jecs_world", version = "^0.1.3" }
 refs = { name = "killergg/jecs_refs", version = "^0.1.0" }
 ref = { name = "killergg/jecs_ref", version = "^0.2.2" }
