@@ -6,9 +6,6 @@
 ]=]
 local Players = game:GetService("Players")
 local jecs = require("./roblox_packages/jecs")
-local ref = require("./roblox_packages/ref")
-local refs = require("./roblox_packages/refs")
-local world = require("./roblox_packages/world")
 local observer = require("./observers")
 
 local pair = jecs.pair
@@ -58,28 +55,36 @@ type applyable = {
 	}
 } & { __d: { Entity }}
 
+export type fecesLibrary = {
+	new: (jecs.World) -> feces,
+	group: (changes, deletes?) -> { [Player]: applyable },
+}
+
 export type feces = {
-	apply: (applyable) -> nil, -- applies component changes to world
-	delta: (self) -> (changes, deletes), -- gets the component changes to replicate
+	component: (self: feces) -> jecs.Component,
+	apply: (self: feces, applyable) -> nil, -- applies component changes to world
+	delta: (self: feces) -> (changes, deletes), -- gets the component changes to replicate
 
 	-- gets the entity deletions to replicate
-	full: (self) -> applyable, -- gets all currently replicating components
-	group: (self, changes, deletes?) -> { [Player]: applyable },
+	full: (self: feces) -> applyable, -- gets all currently replicating components
+	group: (changes, deletes?) -> { [Player]: applyable },
 	
 	-- hooks into applying replication
-	added: ((Entity) -> nil) -> nil,
-	changed: ((Entity, Component, any) -> nil) -> nil,
-	removed: ((Entity, Component) -> nil) -> nil,
-	deleted: ((Entity) -> nil) -> nil,
-    -- hooks: {
-    --     added: ((Entity) -> nil)?,
-	--     changed: ((Entity, Component, any) -> nil)?,
-	--     removed: ((Entity, Component) -> nil)?,
-	--     deleted: ((Entity) -> nil)?
-    -- },
+	added: (self: feces, (Entity) -> nil) -> nil,
+	changed: (self: feces, (Entity, Component, any) -> nil) -> nil,
+	removed: (self: feces, (Entity, Component) -> nil) -> nil,
+	deleted: (self: feces, (Entity) -> nil) -> nil,
+    hooks: {
+        added: ((Entity) -> nil)?,
+	    changed: ((Entity, Component, any) -> nil)?,
+	    removed: ((Entity, Component) -> nil)?,
+	    deleted: ((Entity) -> nil)?
+    },
 
-    -- pendingChanges: changes,
-    -- pendingDeletes: deletes,
+    pendingChanges: changes,
+    pendingDeletes: deletes,
+
+	refs: {},
 }
 
 local feces = {}
@@ -120,6 +125,20 @@ local function fill(changes: changes, comp: Component, ent: Entity, value: any, 
 			changes[comp][player].value[ent] = value
 		end
 	end
+end
+
+function feces:_ref(key)
+	if not key then
+		return self.world:entity()
+	end
+
+	local entity = self.refs[key]
+	if not entity then
+		entity = self.world:entity()
+		self.refs[key] = entity
+	end
+	
+	return entity
 end
 
 function feces:_replicating(callback: (Component, PlayerObject, Entity, any, Component) -> nil)
@@ -165,7 +184,7 @@ function feces:_replicating(callback: (Component, PlayerObject, Entity, any, Com
 				continue
 			end
 
-			if jecs.pair_first(world, id) ~= self.replicated :: number then
+			if jecs.pair_first(self.world, id) ~= self.replicated :: number then
 				continue -- it's a pair but the first component isn't replicated e.g pair(someComponent, someOtherComponent) instead of pair(replicated, someOtherComponent)
 			end
 
@@ -175,9 +194,9 @@ function feces:_replicating(callback: (Component, PlayerObject, Entity, any, Com
 			end
 
 			local playerColumn = archetype.columns[record]
-			local component = jecs.pair_second(world, id)
+			local component = jecs.pair_second(self.world, id)
 			for row, entity in entities do
-				if not world:has(entity :: Entity, component :: Component) then
+				if not self.world:has(entity :: Entity, component :: Component) then
 					continue
 				end
 
@@ -185,7 +204,7 @@ function feces:_replicating(callback: (Component, PlayerObject, Entity, any, Com
 					component :: Component,
 					playerColumn[row],
 					entity :: Entity,
-					world:get(
+					self.world:get(
 						entity :: Entity,
 						component :: Component
 					),
@@ -205,7 +224,7 @@ end
 	local transform = feces:component()
 	```
 ]=]
-function feces:component(): jecs.Component
+function feces:component<T>(): jecs.Component<T>
     local component = self.world:component()
     local paired = pair(self.replicated, component)
 
@@ -214,7 +233,12 @@ function feces:component(): jecs.Component
     end)
 
     self.world:added(paired, function(entity, value)
-        fill(self.pendingChanges, component, entity, world:get(entity, component), getPlayers(value) :: {Player})
+		fill(
+			self.pendingChanges,
+			component, entity,
+			self.world:get(entity, component),
+			getPlayers(value) :: {Player}
+		)
     end)
 
     self.world:removed(paired, function(entity, value)
@@ -228,7 +252,7 @@ end
 	@within feces
 	Applies changes to the world by taking in the [`applyable`](/api/feces#applyable) type and editing the world. 
 	```lua
-	feces.apply({
+	feces:apply({
 		[someComponent] = {
 			[someForeignEntity] = someValue,
 		}
@@ -250,11 +274,11 @@ function feces:apply(
 		
 		if component == DELETE_VALUE then
 			for _, entity in entities do
-				local id = ref(`repl{entity}`)
+				local id = self:_ref(`repl{entity}`)
 				if self.hooks.deleted then
 					self.hooks.deleted(id)
 				end
-				world:delete(id)
+				self.world:delete(id)
 			end
 			continue
 		end
@@ -262,32 +286,32 @@ function feces:apply(
 		local newEntities = {}
 
 		for entity: Entity, value in entities.value do
-			if not refs[`repl{entity}`] then
-				local id = ref(`repl{entity}`)
+			if not self.refs[`repl{entity}`] then
+				local id = self:_ref(`repl{entity}`)
 				if self.hooks.changed then
 					self.hooks.changed(id, component, value)
 				end
-				world:set(id, component, value)
+				self.world:set(id, component, value)
 				if self.hooks.added then
 					newEntities[id] = true
 				end
 			else
-				local id = ref(`repl{entity}`)
+				local id = self:_ref(`repl{entity}`)
 				if self.hooks.changed then
 					self.hooks.changed(id, component, value)
 				end
-				world:set(id, component, value)
+				self.world:set(id, component, value)
 			end
 		end
 
 		for entity: Entity, value in entities.special do
-			local id = ref(`repl{entity}`)
+			local id = self:_ref(`repl{entity}`)
 
 			if value == DELETE_VALUE then
 				if self.hooks.removed then
 					self.hooks.removed(id, component)
 				end
-				world:remove(id, component)
+				self.world:remove(id, component)
 				continue
 			end
 			
@@ -296,7 +320,7 @@ function feces:apply(
 				self.hooks.changed(id, component, newValue)
 			end
 
-			world:set(id, component, newValue)
+			self.world:set(id, component, newValue)
 		end
 
 		if self.hooks.added then
@@ -310,7 +334,7 @@ end
 	@within feces
 	Gets the world changes from the last time it was called.
 	```lua
-	local changedComponents, deletedEntities = feces.delta()
+	local changedComponents, deletedEntities = feces:delta()
 	-- ... replicate however you'd like or see the examples [here](/docs/setup)
 	```
 ]=]
@@ -326,7 +350,7 @@ end
 	Reformats the results of [`delta()`](/api/feces#delta) into an easier format to replicate.
 	Not optimal, but recommended if performance of feces-replicated entities is not a concern.
 	```lua
-	local dataByPlayer = feces.group(feces.delta())
+	local dataByPlayer = feces.group(feces:delta())
 	for player, packet in dataByPlayer do
 		someRemote:FireClient(player, packet)
 	end
@@ -365,7 +389,7 @@ end
 	This is useful for providing payloads to new players when they first join a server.
 	:::
 	```lua
-	local changedComponents = feces.full()
+	local changedComponents = feces:full()
 	-- ... replicate however you'd like or see the examples [here](/docs/setup)
 	```
 ]=]
@@ -423,7 +447,7 @@ function feces:deleted(callback: (Entity) -> nil)
 	self.hooks.deleted = callback
 end	
 
-function feces.new(world: jecs.World)
+function feces.new(world: jecs.World): feces
     local replicated = observer(world):component() 
     local self = setmetatable({
         world = world,
@@ -434,7 +458,8 @@ function feces.new(world: jecs.World)
         pendingChanges = {} :: changes,
         pendingDeletes = {} :: deletes,
         hooks = {},
-    }, feces)
+		refs = {},
+    }, feces) :: any
 
     world:added(replicated, function(entity, value)
         -- gotta replicate all the components
@@ -450,4 +475,7 @@ function feces.new(world: jecs.World)
     return self
 end
 
-return feces
+return feces :: {
+	new: (jecs.World) -> feces,
+	group: 
+}
