@@ -60,7 +60,7 @@ export type fecesLibrary = {
 	group: (changes, deletes?) -> { [Player]: applyable },
 }
 
-export type feces = {
+export type feces = fecesLibrary & {
 	component: (self: feces) -> jecs.Component,
 	apply: (self: feces, applyable) -> nil, -- applies component changes to world
 	delta: (self: feces) -> (changes, deletes), -- gets the component changes to replicate
@@ -445,7 +445,7 @@ end
 ]=]
 function feces:deleted(callback: (Entity) -> nil)
 	self.hooks.deleted = callback
-end	
+end
 
 function feces.new(world: jecs.World): feces
     local replicated = observer(world):component() 
@@ -475,7 +475,4 @@ function feces.new(world: jecs.World): feces
     return self
 end
 
-return feces :: {
-	new: (jecs.World) -> feces,
-	group: 
-}
+return feces :: fecesLibrary

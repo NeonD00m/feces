@@ -29,7 +29,4 @@ scripts = { name = "pesde/scripts_rojo", version = "^0.1.0", target = "lune" }
 rojo = { name = "pesde/rojo", version = "^7.4.4", target = "lune" }
 
 [dependencies]
-jecs = { wally = "marked/jecs", version = "^0.5.5" }
-# world = { name = "killergg/jecs_world", version = "^0.1.3" }
-# refs = { name = "killergg/jecs_refs", version = "^0.1.0" }
-# ref = { name = "killergg/jecs_ref", version = "^0.2.2" }
+jecs = { name = "marked/jecs", version = "^0.5.5" }

@@ -29,6 +29,6 @@ scripts = { name = "pesde/scripts_rojo", version = "^0.1.0", target = "lune" }
 rojo = { name = "pesde/rojo", version = "^7.4.4", target = "lune" }
 
 [dependencies]
-core = { name = "killergg/feces_core", version = "^" }
+core = { workspace = "killergg/feces_core", version = "^" }
 world = { name = "killergg/jecs_world", version = "^0.1.3" }
 refs = { name = "killergg/jecs_refs", version = "^0.1.0" }
