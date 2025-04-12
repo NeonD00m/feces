@@ -1,5 +1,5 @@
 name = "killergg/feces_core"
-version = "1.0.0"
+version = "1.0.0-rc.1"
 description = "Fast Entity Component Export System: Generalized Replication for jecs."
 authors = ["NeonD00m", "as8d"]
 repository = "https://github.com/neond00m/feces"
@@ -9,13 +9,13 @@ includes = [
   "pesde.toml",
   "../README.md",
   "LICENSE",
-  "src",
+  "feces.luau",
 ]
 
 [target]
 environment = "roblox"
-lib = "src/init.luau"
-build_files = ["src"]
+lib = "feces.luau"
+build_files = ["feces.luau"]
 
 [indices]
 default = "https://github.com/pesde-pkg/index"

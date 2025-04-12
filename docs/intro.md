@@ -31,5 +31,15 @@ end)
 ```
 
 ## Installation
-Currently only available on [pesde](https://pesde.dev/packages/killergg/feces).
+Currently only available on pesde:
+- [Core package](https://pesde.dev/packages/killergg/feces_core)
+- [Auto-setup package](https://pesde.dev/packages/killergg/feces)
 
+
+## Details
+
+feces requires a couple specific conditions to work correctly:
+1. The components should all be created before a feces object is created.
+2. The official jecs addon `[observers](https://github.com/Ukendio/jecs/blob/main/addons/observers.luau)` must be created on the world before a feces object is created. [(unofficially on pesde)](https://pesde.dev/packages/killergg/jecs_observers)
+
+These requirements are automatically met by the [auto](https://pesde.dev/packages/killergg/feces) package (called `killergg/feces` to maintain some sort of compatibility with previous versions).
