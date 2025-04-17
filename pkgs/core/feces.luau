@@ -5,6 +5,8 @@
 	The feces library for replicating jecs entities and components.
 ]=]
 local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+local isClient = RunService:IsClient()
 local jecs = require("./roblox_packages/jecs")
 
 local pair = jecs.pair
@@ -95,6 +97,9 @@ export type feces = lib & {
 
 local lib = {}
 
+local availablePlayers = {}
+local playerConnections = {}
+
 local function getPlayers(info: PlayerObject): { Player? }
 	if typeof(info) == "table" then
 		return info
@@ -110,13 +115,12 @@ local function getPlayers(info: PlayerObject): { Player? }
 		return result
 	end
 	
-	return { info }
+	return if info then { info } else availablePlayers
 end
 
-local function fill(changes: changes, comp: Component, ent: Entity, value: any, players: PlayerObject)
+local function fill(changes: changes, comp: Component, ent: Entity, value: any, players: { Player? })
 	changes[comp] = changes[comp] or {}
-	
-	for _, player in getPlayers(players) do
+	for _, player in players do 
 		if not player then
 			continue
 		end
@@ -131,14 +135,16 @@ local function fill(changes: changes, comp: Component, ent: Entity, value: any, 
 end
 
 local function ref(self: feces, key: string?): Entity
+	local world = self.world
 	if not key then
-		return self.world:entity()
+		return world:entity()
 	end
 
-	local entity = self.refs[key]
+	local refs = self.refs
+	local entity = refs[key]
 	if not entity then
-		entity = self.world:entity()
-		self.refs[key] = entity
+		entity = world:entity()
+		refs[key] = entity
 	end
 	
 	return entity
@@ -415,21 +421,11 @@ local function deleted(self: feces, callback: (Entity) -> nil)
 	self.hooks.deleted = callback
 end
 
--- MEGA SU
--- convert class structure to axis-like and skilift-like
--- use component_index to get every registered component in the world and check metatables for when to check if theres a new component
--- listen to when a component is added, removed and changed via observers and propagate that further into replication
--- get replication changes
--- REPLICATE THE DATA!!!
--- receive the data...
--- APPLY THE DATAA!!!
--- make sure that EVERYTHING works!!!! SUPER Important
-
-
 
 function lib.new(world: jecs.World): feces
 	--assume the user has already added observers to the world
     local replicated = world:component() 
+	world:set(replicated, jecs.Name, "replicated")
     local self = {
 		replicated = replicated,
 		queries = {
@@ -441,7 +437,6 @@ function lib.new(world: jecs.World): feces
         pendingDeletes = {} :: deletes,
         hooks = {},
 		refs = {},
-
 		ref = ref,
 		replicating = replicating,
 		apply = apply,
@@ -453,27 +448,49 @@ function lib.new(world: jecs.World): feces
 		removed = removed,
 		deleted = deleted,
     } :: any
+	if isClient then
+		return self :: feces
+	end
 
-	for component, _ in world.component_index do
-		local paired = pair(replicated, component)
+	if next(playerConnections) == nil then
+		availablePlayers = Players:GetPlayers()
+		table.insert(playerConnections, Players.PlayerAdded:Connect(function(player: Player)
+			availablePlayers[`{player.UserId}`]  = player
+		end))
 
-		local function fillChanges(entity, value)
-			if not world:has(entity, replicated) then
-				return
-			end
-			local players = getPlayers(world:get(entity, replicated))
-			fill(self.pendingChanges, component, entity, if value == nil then NIL_VALUE else value, players :: {Player})
+		table.insert(playerConnections, Players.PlayerRemoving:Connect(function(player: Player)
+			availablePlayers[`{player.UserId}`] = nil
+		end))
+	end
+
+	local function fillChanges(entity, value, component)
+		local record = jecs.entity_index_try_get_fast(world.entity_index, entity)
+		if not record then
+			return
 		end
 
-		world:added(component, fillChanges)
-		world:changed(component, fillChanges)
+		local archetype = record.archetype
+		if not archetype then
+			return
+		end
+
+		local players = getPlayers(archetype.records[replicated])
+		fill(self.pendingChanges, component, entity, if value == DELETE_VALUE then DELETE_VALUE elseif value == nil then NIL_VALUE else value, players :: { Player })
+	end
+
+	local function listen(component)
+		local paired = pair(replicated, component)
+		
+		world:added(component, function(entity, value)
+			fillChanges(entity, value, component)
+		end)
+
+		world:changed(component, function(entity, value)
+			fillChanges(entity, value, component)
+		end)
 
 		world:removed(component, function(entity)
-			if not world:has(entity, replicated) then
-				return
-			end
-			local players = getPlayers(world:get(entity, replicated))
-			fill(self.pendingChanges, component, entity, DELETE_VALUE, players :: {Player})
+			fillChanges(entity, DELETE_VALUE, component)
 		end)
 	
 		world:added(paired, function(entity, value)
@@ -481,21 +498,84 @@ function lib.new(world: jecs.World): feces
 				self.pendingChanges,
 				component, entity,
 				world:get(entity, component),
-				getPlayers(value) :: {Player}
+				getPlayers(value) :: { Player }
 			)
 		end)
 	
 		world:removed(paired, function(entity, value)
-			fill(self.pendingChanges, component, entity, DELETE_VALUE, getPlayers(value) :: {Player})
+			fill(self.pendingChanges, component, entity, DELETE_VALUE, getPlayers(value))
 		end)
 	end
 
+	local function disconnect(component)
+		local paired = pair(replicated, component)
+		local signals = world.signals
+		signals.added[component] = nil
+		signals.emplaced[component] = nil
+		signals.removed[component] = nil
+
+		signals.added[paired] = nil
+		signals.emplaced[paired] = nil
+		signals.removed[paired] = nil
+	end
+
+	local component_index = world.component_index
+	for component in component_index do
+		if component == replicated or (jecs.IS_PAIR(component) and jecs.pair_first(world, component) == replicated) then
+			continue
+		end
+
+		listen(component)
+	end
+
+	setmetatable(component_index, {
+		__newindex = function(tbl, component, value)
+			if component == replicated or (jecs.IS_PAIR(component) and jecs.pair_first(world, component) == replicated) then
+				rawset(tbl, component, value)
+				return
+			end
+
+			local old = rawget(tbl, component)
+			rawset(tbl, component, value)
+
+			if old == nil and value ~= nil then
+				listen(component)
+			elseif old ~= nil and value == nil then
+				disconnect(component)
+			end
+		end,
+		__index = function(tbl, key)
+			return rawget(tbl, key)
+		end
+	})
+
     world:added(replicated, function(entity, value: PlayerObject)
+		local record = jecs.entity_index_try_get_fast(world.entity_index, entity)
+		if not record then
+			return
+		end
+
+		local archetype = record.archetype
+		if not archetype then
+			return
+		end
+		
+		local columns = archetype.columns
+		local row = record.row
+		local types = archetype.types
         local players = getPlayers(value)
 
-		--there has to be a better way to do this
-		for component, _ in world.component_index do
-			fill(self.pendingChanges, component, entity, if value == nil then NIL_VALUE else value, players :: {Player})
+		for key, id in types do
+			if id == replicated then
+				continue
+			end
+
+			local column = columns[key]
+			if not column then
+				continue
+			end
+
+			fill(self.pendingChanges, id, entity, column[row], players)
 		end
     end)
 
