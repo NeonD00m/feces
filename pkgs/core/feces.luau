@@ -4,9 +4,8 @@
 	@class feces
 	The feces library for replicating jecs entities and components.
 ]=]
-local Players = game:GetService("Players")
-local RunService = game:GetService("RunService")
-local isClient = RunService:IsClient()
+local Players = game and game:GetService("Players")
+local isClient = game and game:GetService("RunService"):IsClient()
 local jecs = require("./roblox_packages/jecs")
 
 local pair = jecs.pair
@@ -97,22 +96,23 @@ export type feces = lib & {
 
 local lib = {}
 
-local availablePlayers = {}
+local availablePlayers: { [any]: any } = if Players then {} else { ["-1"] = "-1" }
+	-- {["-1"] = {Name = "TestPlayer", UserId = -1}}
 local playerConnections = {}
 
 local function getPlayers(info: PlayerObject): { Player? }
 	if typeof(info) == "table" then
 		return info
 	elseif typeof(info) == "function" then
-		local result = {}
-		for key, player in Players:GetPlayers() do
+		local result: { [any]: any } = {}
+		for key, player in availablePlayers do
 			if not info(player) then
 				continue
 			end
 			
 			result[key] = player
 		end
-		return result
+		return result :: { Player }
 	end
 	
 	return if info then { info } else availablePlayers
@@ -452,10 +452,10 @@ function lib.new(world: jecs.World): feces
 		return self :: feces
 	end
 
-	if next(playerConnections) == nil then
+	if Players and next(playerConnections) == nil then
 		availablePlayers = Players:GetPlayers()
 		table.insert(playerConnections, Players.PlayerAdded:Connect(function(player: Player)
-			availablePlayers[`{player.UserId}`]  = player
+			availablePlayers[`{player.UserId}`] = player
 		end))
 
 		table.insert(playerConnections, Players.PlayerRemoving:Connect(function(player: Player)

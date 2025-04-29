@@ -1,0 +1,11 @@
+{
+  "languageMode": "strict",
+  "lint": {
+    "*": true
+  },
+  "aliases": {
+    "main": "./src/",
+    "lune": "~/.lune/.typedefs/0.8.3/",
+    "pkg": "./lune_packages/"
+  }
+}

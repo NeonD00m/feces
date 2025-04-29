@@ -48,6 +48,24 @@ index_url = "https://github.com/daimond113/pesde-index"
 environment = "lune"
 lib = "src/init.luau"
 
+[graph."itsfrank/frktest"."0.0.2 lune"]
+direct = ["frktest", { name = "itsfrank/frktest", version = "^0.0.2", target = "lune" }, "dev"]
+resolved_ty = "dev"
+
+[graph."itsfrank/frktest"."0.0.2 lune".target]
+environment = "lune"
+lib = "src/_pesde_init.luau"
+
+[graph."itsfrank/frktest"."0.0.2 lune".pkg_ref]
+ref_ty = "pesde"
+name = "itsfrank/frktest"
+version = "0.0.2"
+index_url = "https://github.com/pesde-pkg/index"
+
+[graph."itsfrank/frktest"."0.0.2 lune".pkg_ref.target]
+environment = "lune"
+lib = "src/_pesde_init.luau"
+
 [graph."jiwonz/dirs"."0.3.0 lune"]
 resolved_ty = "standard"
 
@@ -145,6 +163,34 @@ stylua = [{ name = "pesde/stylua", version = "^2.0.2", index = "https://github.c
 environment = "lune"
 lib = "src/lib/init.luau"
 
+[graph."killergg/jecs_observers"."0.1.0 roblox"]
+direct = ["observers", { name = "killergg/jecs_observers", version = "^0.1.0", target = "roblox" }, "standard"]
+resolved_ty = "standard"
+
+[graph."killergg/jecs_observers"."0.1.0 roblox".target]
+environment = "roblox"
+lib = "src/init.luau"
+build_files = ["src"]
+
+[graph."killergg/jecs_observers"."0.1.0 roblox".dependencies]
+"marked/jecs" = ["0.5.5 roblox", "jecs"]
+
+[graph."killergg/jecs_observers"."0.1.0 roblox".pkg_ref]
+ref_ty = "pesde"
+name = "killergg/jecs_observers"
+version = "0.1.0"
+index_url = "https://github.com/pesde-pkg/index"
+
+[graph."killergg/jecs_observers"."0.1.0 roblox".pkg_ref.dependencies]
+jecs = [{ name = "marked/jecs", version = "^0.5.5", index = "https://github.com/pesde-pkg/index" }, "standard"]
+rojo = [{ name = "pesde/rojo", version = "^7.4.4", index = "https://github.com/pesde-pkg/index", target = "lune" }, "dev"]
+scripts = [{ name = "pesde/scripts_rojo", version = "^0.1.0", index = "https://github.com/pesde-pkg/index", target = "lune" }, "dev"]
+
+[graph."killergg/jecs_observers"."0.1.0 roblox".pkg_ref.target]
+environment = "roblox"
+lib = "src/init.luau"
+build_files = ["src"]
+
 [graph."lukadev_0/option"."1.2.0 lune"]
 resolved_ty = "standard"
 
@@ -178,6 +224,43 @@ index_url = "https://github.com/daimond113/pesde-index"
 [graph."lukadev_0/result"."1.2.0 lune".pkg_ref.target]
 environment = "lune"
 lib = "lib/init.luau"
+
+[graph."marked/jecs"."0.5.5 roblox"]
+resolved_ty = "standard"
+
+[graph."marked/jecs"."0.5.5 roblox".target]
+environment = "roblox"
+lib = "init.luau"
+build_files = ["init.luau"]
+
+[graph."marked/jecs"."0.5.5 roblox".pkg_ref]
+ref_ty = "pesde"
+name = "marked/jecs"
+version = "0.5.5"
+index_url = "https://github.com/pesde-pkg/index"
+
+[graph."marked/jecs"."0.5.5 roblox".pkg_ref.target]
+environment = "roblox"
+lib = "init.luau"
+build_files = ["init.luau"]
+
+[graph."marked/jecs"."0.5.5 luau"]
+direct = ["jecs", { name = "marked/jecs", version = "^0.5.5", target = "luau" }, "standard"]
+resolved_ty = "standard"
+
+[graph."marked/jecs"."0.5.5 luau".target]
+environment = "luau"
+lib = "init.luau"
+
+[graph."marked/jecs"."0.5.5 luau".pkg_ref]
+ref_ty = "pesde"
+name = "marked/jecs"
+version = "0.5.5"
+index_url = "https://github.com/pesde-pkg/index"
+
+[graph."marked/jecs"."0.5.5 luau".pkg_ref.target]
+environment = "luau"
+lib = "init.luau"
 
 [graph."pesde/rojo"."7.4.4 lune"]
 direct = ["rojo", { name = "pesde/rojo", version = "^7.4.4", target = "lune" }, "dev"]

@@ -1,4 +1,4 @@
-local core = require("./roblox_packages/feces")
+local core = require("./roblox_packages/core")
 local world = require("./roblox_packages/world")
 local refs = require("./roblox_packages/refs")
 local observers = require("./roblox_packages/observers")
