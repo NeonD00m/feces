@@ -27,4 +27,3 @@ frktest = { name = "itsfrank/frktest", version = "^0.0.2", target = "lune" }
 
 [dependencies]
 jecs = { name = "marked/jecs", version = "^0.5.5", target = "luau" }
-observers = { name = "killergg/jecs_observers", version = "^0.1.0", target = "roblox" }

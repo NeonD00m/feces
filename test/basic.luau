@@ -4,12 +4,12 @@ local check = frktest.assert.check
 
 return function()
     local jecs = require("../luau_packages/jecs")
-    local o = require("../roblox_packages/observers")
-    local lib = require("../pkgs/auto/auto.luau")
-
-    local feces = nil
+    local o = require("./observers")
+    local lib = require("./feces")
 
     test.suite("basic", function()
+        local feces = nil
+
         test.case("setup", function()
             feces = lib.new(o(jecs.World.new())) 
             check.truthy(feces)
