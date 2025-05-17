@@ -126,11 +126,10 @@ local function fill(changes: changes, comp: Component, ent: Entity, value: any, 
 		end
 
 		changes[comp][player] = changes[comp][player] or { value = {}, special = {} }
-		if value == DELETE_VALUE or value == NIL_VALUE then
-			changes[comp][player].special[ent] = value
-		else
-			changes[comp][player].value[ent] = value
-		end
+		local isSpecial = value == DELETE_VALUE or value == NIL_VALUE
+		
+		changes[comp][player].special[ent] = if isSpecial then value else nil
+		changes[comp][player].value[ent] = if isSpecial then nil else value
 	end
 end
 
