@@ -7,7 +7,6 @@ local Players = game and game:GetService("Players")
 local isServer = game and game:GetService("RunService"):IsServer()
 local jecs = require(if game then "./roblox_packages/jecs" else "../luau_packages/jecs")
 local observers = game and require("../../../killergg+jecs_observers/0.1.0/jecs_observers/src")
-
 type World = observers.PatchedWorld
 
 local pair = jecs.pair
@@ -132,14 +131,15 @@ local function fill(changes: changes, comp: Component, ent: Entity, value: any, 
 	changes[comp] = changes[comp] or {}
 	previous[comp] = previous[comp] or {}
 
+	players = resolvePlayers(players)
+
 	for _, player in players do
 		 if typeof(player) ~= "Instance" or not player:IsDescendantOf(Players) then
             continue
         end
 
         local entry = changes[comp][player] or { value = {}, special = {} }
-		
-		if value == DELETE_VALUE or value == NIL_VALUE then
+        if value == DELETE_VALUE or value == NIL_VALUE then
             entry.special[ent] = value
         else
             previous[comp][ent] = value
@@ -317,6 +317,7 @@ lib.group = group
 	-- ... replicate however you'd like or see the examples [here](/docs/setup)
 	```
 ]=]
+
 local function full(self: feces): applyable
 	local data = {} :: applyable
 
@@ -324,6 +325,8 @@ local function full(self: feces): applyable
 		if player then
 			return -- we only want publicly replicated data
 		end
+
+		value = value or NIL_VALUE
 		data[component] = data[component] or { value = {}, special = {} }
 		if value == DELETE_VALUE or value == NIL_VALUE then
 			(data[component].special :: any)[entity] = value
@@ -332,14 +335,20 @@ local function full(self: feces): applyable
 		end
 	end
 
+
 	for _, archetype in self.queries.single:archetypes() do
 		local entities = archetype.entities
+		if #entities == 0 then
+			continue
+		end
+
 		local columns = archetype.columns
 		local types = archetype.types
 		local record = archetype.records[self.replicated]
 		if not record then
 			continue
 		end
+
 
 		local playerColumn = columns[record]
 		for key, id in types do
@@ -360,6 +369,10 @@ local function full(self: feces): applyable
 
 	for _, archetype in self.queries.pair:archetypes() do
 		local entities: { number } = archetype.entities
+		if #entities == 0 then
+			continue
+		end
+
 		local types = archetype.types
 		local records = archetype.records
 
@@ -461,22 +474,31 @@ function lib.new(world: World): feces
 	
 	if isServer then
         local function listen(comp)
-            if storages[comp] then return end
+            print("LISTENING TO COMPONENT", comp)
+            if storages[comp] then 
+                print("ALREADY LISTENING TO COMPONENT", comp)
+				return
+			end
+
             storages[comp] = {}
             local isTag = jecs.is_tag(world, comp)
             -- value hook
             world:added(comp, function(ent, _, val)
-                storages[comp][ent] = { value = val or true, players = { if game then Players:GetPlayers() else {"-1"}} }
+                print("world added", ent, comp, val)
+                storages[comp][ent] = { value = val or true, players = if game then Players:GetPlayers() else { "-1" } }
             end)
 
             if not isTag then
+                print("LISTENING TO CHANGES FOR COMPONENT", comp)
                 world:changed(comp, function(ent, _, val)
-                    storages[comp][ent] = { value = val, players = { if game then Players:GetPlayers() else {"-1"} } }
+                    print("world changed", ent, comp, val)
+                    storages[comp][ent] = { value = val, players = if game then Players:GetPlayers() else { "-1" } }
                 end)
             end
 
 			world:removed(comp, function(ent)
-                storages[comp][ent] = { value = DELETE_VALUE, players = { if game then Players:GetPlayers() else {"-1"} } }
+                print("world removed", ent, comp)
+                storages[comp][ent] = { value = DELETE_VALUE, players = if game then Players:GetPlayers() else { "-1" } }
             end)
         end
 
