@@ -29,4 +29,4 @@ scripts = { name = "pesde/scripts_rojo", version = "^0.1.0", target = "lune" }
 rojo = { name = "pesde/rojo", version = "^7.4.4", target = "lune" }
 
 [dependencies]
-jecs = { name = "marked/jecs", version = "^0.5.5" }
+jecs = { name = "marked/jecs", version = "^0.6.0" }

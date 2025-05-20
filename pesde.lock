@@ -197,23 +197,23 @@ index_url = "https://github.com/daimond113/pesde-index"
 environment = "lune"
 lib = "lib/init.luau"
 
-[graph."marked/jecs"."0.5.5 luau"]
-direct = ["jecs", { name = "marked/jecs", version = "^0.5.5", target = "luau" }, "standard"]
+[graph."marked/jecs"."0.6.0 luau"]
+direct = ["jecs", { name = "marked/jecs", version = "^0.6.0", target = "luau" }, "standard"]
 resolved_ty = "standard"
 
-[graph."marked/jecs"."0.5.5 luau".target]
+[graph."marked/jecs"."0.6.0 luau".target]
 environment = "luau"
-lib = "init.luau"
+lib = "jecs.luau"
 
-[graph."marked/jecs"."0.5.5 luau".pkg_ref]
+[graph."marked/jecs"."0.6.0 luau".pkg_ref]
 ref_ty = "pesde"
 name = "marked/jecs"
-version = "0.5.5"
+version = "0.6.0"
 index_url = "https://github.com/pesde-pkg/index"
 
-[graph."marked/jecs"."0.5.5 luau".pkg_ref.target]
+[graph."marked/jecs"."0.6.0 luau".pkg_ref.target]
 environment = "luau"
-lib = "init.luau"
+lib = "jecs.luau"
 
 [graph."pesde/rojo"."7.4.4 lune"]
 direct = ["rojo", { name = "pesde/rojo", version = "^7.4.4", target = "lune" }, "dev"]

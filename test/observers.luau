@@ -145,7 +145,8 @@ local function observers_add(world: jecs.World): PatchedWorld
 	local signals = {
 		added = {} :: Signal,
 		emplaced = {} :: Signal,
-		removed = {} :: Signal
+		removed = {} :: Signal,
+        deleted = {} :: Signal
 	}
 
 	world_mut.added = function<T>(
@@ -248,6 +249,31 @@ local function observers_add(world: jecs.World): PatchedWorld
 			local i = table.find(listeners, fn)
 			listeners[i] = listeners[n]
 			listeners[n] = nil
+		end
+	end
+
+    local on_delete = nil
+	world_mut.deleted = function(_, entity, fn)
+		local listeners = signals.deleted[entity]
+		if not listeners then
+			listeners = {}
+			signals.deleted[entity] = listeners
+			on_delete = function(id)
+				if id == entity then
+					for _, listener in listeners do
+						listener()
+					end
+				end
+			end
+		end
+		table.insert(listeners, fn)
+	end
+
+	local world_delete = world.delete
+	world.delete = function(world, entity)
+		world_delete(world, entity)
+		if on_delete then
+			on_delete(entity)
 		end
 	end
 

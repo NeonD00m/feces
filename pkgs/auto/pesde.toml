@@ -30,6 +30,6 @@ rojo = { name = "pesde/rojo", version = "^7.4.4", target = "lune" }
 
 [dependencies]
 core = { workspace = "killergg/feces_core", version = "^" }
-world = { name = "killergg/jecs_world", version = "^0.1.4" }
+world = { name = "killergg/jecs_world", version = "^0.1.5" }
 refs = { name = "killergg/jecs_refs", version = "^0.1.0" }
 observers = { name = "killergg/jecs_observers", version = "^0.2.0" }

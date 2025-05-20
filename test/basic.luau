@@ -21,7 +21,9 @@ return function()
             local E = feces.world:entity()
             local A = feces.world:component()
             local B = feces.world:component()
-            feces:delta()
+            local initial, empty = feces:delta()
+            -- check.table.equal(initial, {})
+            -- check.table.equal(empty, {})
             -- print("entity:", E)
             -- print("component A:", A)
             -- print("component B:", B)
@@ -33,6 +35,8 @@ return function()
             -- print("added replicated")
 
             local changes, deleted = feces:delta()
+            -- print("changes", changes)
+            -- print("deleted", deleted)
             check.table.equal(changes, {
                 [A] = {
                     ["-1"] = {
@@ -54,143 +58,145 @@ return function()
             check.table.equal(deleted, {})
         end)
 
-        -- test.case("multiple components changed", function()
-        --     local feces = create()
-        --     local E = feces.world:entity()
-        --     local A = feces.world:component()
-        --     local B = feces.world:component()
+        test.case("multiple components changed", function()
+            local feces = create()
+            local E = feces.world:entity()
+            local A = feces.world:component()
+            local B = feces.world:component()
 
-        --     feces.world:set(E, A, 1)
-        --     feces.world:set(E, B, 2)
-        --     feces.world:add(E, feces.replicated)
+            feces.world:set(E, A, 1)
+            feces.world:set(E, B, 2)
+            feces.world:add(E, feces.replicated)
 
-        --     -- call delta the first time to remove the initial state
-        --     local initial, removed = feces:delta()
-        --     -- print("initial", initial)
-        --     -- print("removed", removed)
+            -- call delta the first time to remove the initial state
+            local initial, removed = feces:delta()
+            -- print("initial", initial)
+            -- print("removed", removed)
 
-        --     feces.world:set(E, A, 3)
-        --     feces.world:set(E, B, 4)
+            feces.world:set(E, A, 3)
+            feces.world:set(E, B, 4)
 
-        --     local changes, deleted = feces:delta()
-        --     check.table.equal(changes, {
-        --         [A] = {
-        --             ["-1"] = {
-        --                 value = {
-        --                     [E] = 3
-        --                 },
-        --                 special = {},
-        --             }
-        --         },
-        --         [B] = {
-        --             ["-1"] = {
-        --                 value = {
-        --                     [E] = 4
-        --                 },
-        --                 special = {},
-        --             }
-        --         }
-        --     })
-        --     check.table.equal(deleted, {})
-        -- end)
+            local changes, deleted = feces:delta()
+            check.table.equal(changes, {
+                [A] = {
+                    ["-1"] = {
+                        value = {
+                            [E] = 3
+                        },
+                        special = {},
+                    }
+                },
+                [B] = {
+                    ["-1"] = {
+                        value = {
+                            [E] = 4
+                        },
+                        special = {},
+                    }
+                }
+            })
+            check.table.equal(deleted, {})
+        end)
 
-        -- test.case("multiple components removed", function()
-        --     local feces = create()
-        --     local E = feces.world:entity()
-        --     local A = feces.world:component()
-        --     local B = feces.world:component()
+        test.case("multiple components removed", function()
+            local feces = create()
+            local E = feces.world:entity()
+            local A = feces.world:component()
+            local B = feces.world:component()
 
-        --     feces.world:set(E, A, 1)
-        --     feces.world:set(E, B, 2)
-        --     feces.world:add(E, feces.replicated)
-        --     feces:delta()
+            feces.world:set(E, A, 1)
+            feces.world:set(E, B, 2)
+            feces.world:add(E, feces.replicated)
+            feces:delta()
 
-        --     feces.world:remove(E, A)
-        --     feces.world:remove(E, B)
+            feces.world:remove(E, A)
+            feces.world:remove(E, B)
 
-        --     local changes, deleted = feces:delta()
-        --     check.table.equal(changes, {
-        --         [A] = {
-        --             ["-1"] = {
-        --                 value = {
-        --                     [E] = 1
-        --                 },
-        --                 special = {},
-        --             }
-        --         },
-        --         [B] = {
-        --             ["-1"] = {
-        --                 value = {
-        --                     [E] = 2
-        --                 },
-        --                 special = {},
-        --             }
-        --         }
-        --     })
-        --     check.table.equal(deleted, {})
-        -- end)
+            local changes, deleted = feces:delta()
+            check.table.equal(changes, {
+                [A] = {
+                    ["-1"] = {
+                        value = {},
+                        special = {
+                            [E] = "__d"
+                        },
+                    }
+                },
+                [B] = {
+                    ["-1"] = {
+                        value = {},
+                        special = {
+                            [E] = "__d"
+                        },
+                    }
+                }
+            })
+            check.table.equal(deleted, {})
+        end)
 
-        -- test.case("entity deleted", function()
-        --     local feces = create()
-        --     local E = feces.world:entity()
-        --     local A = feces.world:component()
-        --     local B = feces.world:component()
+        test.case("entity deleted", function()
+            local feces = create()
+            local E = feces.world:entity()
+            local A = feces.world:component()
+            local B = feces.world:component()
 
-        --     feces.world:set(E, A, 1)
-        --     feces.world:set(E, B, 2)
-        --     feces.world:add(E, feces.replicated)
-        --     feces:delta()
+            feces.world:set(E, A, 1)
+            feces.world:set(E, B, 2)
+            feces.world:add(E, feces.replicated)
+            feces:delta()
 
-        --     feces.world:delete(E)
+            feces.world:delete(E)
 
-        --     local changes, deleted = feces:delta()
-        --     check.table.equal(changes, {})
-        --     check.table.equal(deleted, {
-        --         ["-1"] = { E }
-        --     })
-        -- end)
+            local changes, deleted = feces:delta()
+            print("changes", changes)
+            print("deleted", deleted)
+            check.table.equal(changes, {})
+            check.table.equal(deleted, {
+                ["-1"] = { E }
+            })
+        end)
 
-        -- test.case("replicated deleted", function()
-        --     local feces = create()
-        --     local E = feces.world:entity()
-        --     local A = feces.world:component()
-        --     local B = feces.world:component()
+        test.case("replicated deleted", function()
+            local feces = create()
+            local E = feces.world:entity()
+            local A = feces.world:component()
+            local B = feces.world:component()
 
-        --     feces.world:set(E, A, 1)
-        --     feces.world:set(E, B, 2)
-        --     feces.world:add(E, feces.replicated)
-        --     feces:delta()
+            feces.world:set(E, A, 1)
+            feces.world:set(E, B, 2)
+            feces.world:add(E, feces.replicated)
+            feces:delta()
 
-        --     feces.world:remove(E, feces.replicated)
+            feces.world:remove(E, feces.replicated)
 
-        --     local changes, deleted = feces:delta()
-        --     check.table.equal(changes, {})
-        --     check.table.equal(deleted, {
-        --         ["-1"] = { E }
-        --     })
-        -- end)
+            local changes, deleted = feces:delta()
+            check.table.equal(changes, {})
+            check.table.equal(deleted, {
+                ["-1"] = { E }
+            })
+        end)
 
-        -- test.case("singleton", function()
-        --     local feces = create()
-        --     local timer = feces.world:component()
-        --     feces.world:set(timer, timer, 10)
-        --     feces.world:add(timer, feces.replicated)
+        test.case("singleton", function()
+            local feces = create()
+            local timer = feces.world:component()
+            feces.world:set(timer, timer, 10)
+            feces.world:add(timer, feces.replicated)
 
-        --     local changes, deleted = feces:delta()
-        --     check.table.equal(changes, {
-        --         [timer] = {
-        --             ["-1"] = {
-        --                 value = {
-        --                     [timer] = 10
-        --                 },
-        --                 special = {
-        --                     -- [timer] = "__n"
-        --                 }
-        --             }
-        --         }
-        --     })
-        --     check.table.equal(deleted, {})
-        -- end)
+            local changes, deleted = feces:delta()
+            check.table.equal(changes, {
+                [timer] = {
+                    ["-1"] = {
+                        value = {
+                            [timer] = 10
+                        },
+                        special = {
+                            -- [timer] = "__n"
+                        }
+                    }
+                }
+            })
+            check.table.equal(deleted, {})
+        end)
 
         test.case("full payload", function()
             local feces = create()

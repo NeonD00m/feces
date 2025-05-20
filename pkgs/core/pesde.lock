@@ -171,25 +171,25 @@ index_url = "https://github.com/daimond113/pesde-index"
 environment = "lune"
 lib = "lib/init.luau"
 
-[graph."marked/jecs"."0.5.5 roblox"]
-direct = ["jecs", { name = "marked/jecs", version = "^0.5.5" }, "standard"]
+[graph."marked/jecs"."0.6.0 roblox"]
+direct = ["jecs", { name = "marked/jecs", version = "^0.6.0" }, "standard"]
 resolved_ty = "standard"
 
-[graph."marked/jecs"."0.5.5 roblox".target]
+[graph."marked/jecs"."0.6.0 roblox".target]
 environment = "roblox"
-lib = "init.luau"
-build_files = ["init.luau"]
+lib = "jecs.luau"
+build_files = ["jecs.luau"]
 
-[graph."marked/jecs"."0.5.5 roblox".pkg_ref]
+[graph."marked/jecs"."0.6.0 roblox".pkg_ref]
 ref_ty = "pesde"
 name = "marked/jecs"
-version = "0.5.5"
+version = "0.6.0"
 index_url = "https://github.com/pesde-pkg/index"
 
-[graph."marked/jecs"."0.5.5 roblox".pkg_ref.target]
+[graph."marked/jecs"."0.6.0 roblox".pkg_ref.target]
 environment = "roblox"
-lib = "init.luau"
-build_files = ["init.luau"]
+lib = "jecs.luau"
+build_files = ["jecs.luau"]
 
 [graph."pesde/rojo"."7.4.4 lune"]
 direct = ["rojo", { name = "pesde/rojo", version = "^7.4.4", target = "lune" }, "dev"]

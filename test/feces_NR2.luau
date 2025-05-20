@@ -4,7 +4,7 @@
 	The feces library for replicating jecs entities and components.
 ]=]
 local Players = game and game:GetService("Players")
-local isServer = game and game:GetService("RunService"):IsServer()
+local isServer = not game or game:GetService("RunService"):IsServer()
 local jecs = require(if game then "./roblox_packages/jecs" else "../luau_packages/jecs")
 local observers = game and require("../../../killergg+jecs_observers/0.1.0/jecs_observers/src")
 type World = observers.PatchedWorld
@@ -71,9 +71,10 @@ export type feces = lib & {
 	pendingChanges: changes,
 	pendingDeletes: deletes,
 	refs: { [string]: Entity },
+    storages: { [Component]: { [Entity]: { value: any, players: { Player } } } },
 
 	ref: (self: feces, key: string?) -> Entity,
-	replicating: (self: feces, (Component, PlayerObject, Entity, any, Component) -> nil) -> nil,
+	-- replicating: (self: feces, (Component, PlayerObject, Entity, any, Component) -> nil) -> nil,
 
 	apply: (self: feces, applyable) -> nil, -- applies component changes to world
 	delta: (self: feces) -> (changes, deletes), -- gets the component changes to replicate
@@ -97,8 +98,6 @@ export type feces = lib & {
 
 local lib = {}
 
-local storages = {}
-
 local function resolvePlayers(filter: PlayerObject): { Player? }
     if type(filter) == "function" then
         local out = {}
@@ -121,20 +120,20 @@ local previous = {}
 
 local function fill(changes: changes, comp: Component, ent: Entity, value: any, players: { Player }, replicated)
 	if not comp or not ent then
-		return
+        return
 	end
 	
 	if comp == replicated or ent == replicated then
 		return
 	end
 
-	changes[comp] = changes[comp] or {}
-	previous[comp] = previous[comp] or {}
-
-	players = resolvePlayers(players)
+    -- EXTRACTED BECAUSE WE ONLY CALL fill() IN ONE PLACE
+	-- players = resolvePlayers(players)
 
 	for _, player in players do
-		 if typeof(player) ~= "Instance" or not player:IsDescendantOf(Players) then
+        changes[comp] = changes[comp] or {}
+        previous[comp] = previous[comp] or {}
+		if game and (typeof(player) ~= "Instance" or not player:IsDescendantOf(Players)) then
             continue
         end
 
@@ -178,11 +177,11 @@ end
 ]=]
 local function apply(self: feces, delta: applyable)
 	if not delta then
-		warn("NO APPLYABLE DATA RECEIVED")
+	-- 	warn("NO APPLYABLE DATA RECEIVED")
 		return
 	end
 
-	print("APPLY HAS BEEN CALLED", delta)
+	-- print("APPLY HAS BEEN CALLED", delta)
 
 	for component, entities in delta :: { [any]: any } do
 		if not entities then
@@ -256,15 +255,31 @@ end
 	```
 ]=]
 local function delta(self: feces): (changes, deletes)
-	print("FULL STORAGES", storages)
-    for comp, storage in storages do
+    local changes, deletedMap = self.pendingChanges, self.pendingDeletes
+	-- print("FULL STORAGES", self.storages)
+    for comp, storage in self.storages do
         for ent, data in storage do
-            fill(self.pendingChanges, comp, ent, data.value, data.players, self.replicated)
+            local players = resolvePlayers(data.players) :: { Player }
+            for i, player in players do
+                if deletedMap[player] and deletedMap[player][ent] then
+                    print("SKIPPING PLAYER FOR DELETION", player, ent)
+                    players[i] = nil
+                end
+            end
+            -- print("filling change:", ent, comp, data.value)
+            fill(changes, comp, ent, data.value, players, self.replicated)
         end
         table.clear(storage)
     end
 
-    local changes, deleted = self.pendingChanges, self.pendingDeletes
+    local deleted: deletes = {}
+    for player, entities in deletedMap do
+        deleted[player] = {}
+        for entity, _ in entities do
+            table.insert(deleted[player], entity)
+        end
+    end
+
     self.pendingChanges, self.pendingDeletes = {}, {}
     return changes, deleted
 end
@@ -458,9 +473,10 @@ function lib.new(world: World): feces
 		},
 		world = world,
 		pendingChanges = {} :: changes,
-		pendingDeletes = {} :: deletes,
+		pendingDeletes = {} :: { [Player]: { [Entity]: true } },
 		hooks = {},
 		refs = {},
+        storages = {},
 		ref = ref,
 		apply = apply,
 		delta = delta,
@@ -474,31 +490,25 @@ function lib.new(world: World): feces
 	
 	if isServer then
         local function listen(comp)
-            print("LISTENING TO COMPONENT", comp)
-            if storages[comp] then 
-                print("ALREADY LISTENING TO COMPONENT", comp)
+            if self.storages[comp] then
 				return
 			end
 
-            storages[comp] = {}
+            self.storages[comp] = {}
             local isTag = jecs.is_tag(world, comp)
             -- value hook
             world:added(comp, function(ent, _, val)
-                print("world added", ent, comp, val)
-                storages[comp][ent] = { value = val or true, players = if game then Players:GetPlayers() else { "-1" } }
+                self.storages[comp][ent] = { value = val, players = if game then Players:GetPlayers() else { "-1" } }
             end)
 
             if not isTag then
-                print("LISTENING TO CHANGES FOR COMPONENT", comp)
                 world:changed(comp, function(ent, _, val)
-                    print("world changed", ent, comp, val)
-                    storages[comp][ent] = { value = val, players = if game then Players:GetPlayers() else { "-1" } }
+                    self.storages[comp][ent] = { value = val, players = if game then Players:GetPlayers() else { "-1" } }
                 end)
             end
 
 			world:removed(comp, function(ent)
-                print("world removed", ent, comp)
-                storages[comp][ent] = { value = DELETE_VALUE, players = if game then Players:GetPlayers() else { "-1" } }
+                self.storages[comp][ent] = { value = DELETE_VALUE, players = if game then Players:GetPlayers() else { "-1" } }
             end)
         end
 
@@ -522,7 +532,8 @@ function lib.new(world: World): feces
 		world:removed(replicated, function(ent, filter)
             for _, player in resolvePlayers(filter) do
                 self.pendingDeletes[player] = self.pendingDeletes[player] or {}
-                table.insert(self.pendingDeletes[player], ent)
+                self.pendingDeletes[player][ent] = true
+                -- table.insert(self.pendingDeletes[player], ent)
             end
         end)
     end

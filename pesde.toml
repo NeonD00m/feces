@@ -26,4 +26,4 @@ rojo = { name = "pesde/rojo", version = "^7.4.4", target = "lune" }
 frktest = { name = "itsfrank/frktest", version = "^0.0.2", target = "lune" }
 
 [dependencies]
-jecs = { name = "marked/jecs", version = "^0.5.5", target = "luau" }
+jecs = { name = "marked/jecs", version = "^0.6.0", target = "luau" }
