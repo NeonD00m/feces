@@ -6,12 +6,10 @@ lune run test/_run.luau
 
 ]]
 
-
-
-
 function load_tests()
     -- tests execute in the order they are loaded
     require("./basic")()
+    require("./advanced")()
 end
 
 function run_tests()
