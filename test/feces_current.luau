@@ -414,7 +414,7 @@ lib.combine = combine
 	```
 ]=]
 
-local function full(self: feces, group: group?): applyable
+local function full(self: Feces, group: group?): applyable
 	local data = {} :: applyable
 	group = group or self
 

@@ -1,80 +1,121 @@
-type Entity<T = any> = number & { __t: T }
+local jecs = require("../../luau_packages/jecs")
 
-export type LocalEntity = Entity
-export type LookupEntity = Entity
-export type Component<T = any> = Entity<T> & number
+export type Jecs = typeof(jecs)
 
-export type nilValue = "__n"
-export type deleteValue = "__d"
+type Observer = {
+	callback: (jecs.Entity) -> (),
+	query: jecs.Query<...jecs.Id>,
+}
 
-export type PlayerObject = Player? | { Player } | (Player) -> boolean
-export type refs = { [string]: Entity }
-export type group = {
+export type World = jecs.World & {
+	added: <T>(World, jecs.Id<T>, (jecs.Entity, jecs.Id, T) -> ()) -> () -> (),
+	removed: <T>(World, jecs.Id<T>, (jecs.Entity, jecs.Id) -> ()) -> () -> (),
+	changed: <T>(World, jecs.Id<T>, (jecs.Entity, jecs.Id, T) -> ()) -> () -> (),
+	observer: (World, Observer) -> (),
+	deleted: <T>(World, jecs.Entity, (jecs.Entity) -> ()) -> (),
+	monitor: (World, Observer) -> (),
+}
+
+export type LocalEntity = jecs.Entity
+export type LookupEntity = jecs.Entity
+export type Component<T = any> = jecs.Entity<T>
+
+export type None = number
+export type Remove = number
+export type ChangeType = number
+
+export type TestPlayer = Player | string
+
+export type PlayerObject = TestPlayer? | { TestPlayer } | (TestPlayer) -> boolean
+export type Refs = { [string]: jecs.Entity }
+export type Group = {
 	origin: string,
 	size: number,
 	lookups: { [LocalEntity]: LookupEntity }, -- get the replicatable lookup id from an entity in this world
 	refs: { [LookupEntity]: LocalEntity }, -- get the entity from this world from its replication lookup id
 }
 
-export type changes = {
+export type Changes = {
 	[Component]: {
-		[Player]: {
-			value: { [Entity]: any },
-			remove: { [Entity]: deleteValue },
-			nil: { [Entity]: nilValue },
-		},
-	},
+		[TestPlayer]: {
+			value: { [LookupEntity]: any },
+			remove: { LookupEntity },
+			none: { LookupEntity }
+		}
+	}
 }
 
-export type pendingDeletes = {
-	[Player]: { [Entity]: true },
+export type NoneComponents = {
+	[Component]: { LookupEntity }
 }
 
-export type deletes = {
-	[Player]: { Entity },
+export type PendingDeletes = {
+	[TestPlayer]: { [LookupEntity]: true },
 }
 
-export type applyable = {
+export type Storages = {
 	[Component]: {
-		value: { [LookupEntity]: any },
-		remove: { [LookupEntity]: deleteValue },
-		nil: { [LookupEntity]: deleteValue },
-	},
+		[LocalEntity]: {
+			action: ChangeType,
+			value: any?,
+			players: { TestPlayer }
+		}
+	}
+}
+
+export type Deletes = {
+	[TestPlayer]: { LookupEntity },
+}
+
+export type Applyable = {
+	[Component]: {
+		[LookupEntity]: {
+			value: any,
+			action: ChangeType
+		}
+	}
 } & { __d: { LookupEntity } }
 
-export type lib<jecs> = {
-	new: (typeof(jecs.World)) -> feces,
-	combine: (changes, deletes?) -> { [Player]: applyable },
-	reserve: (size: number) -> group, -- creates a group of entities with a separate lookup 
+export type Lib = {
+	new: (World) -> Feces,
+	combine: (Changes, Deletes?) -> { [TestPlayer]: Applyable },
+	reserve: (number) -> Group, -- creates a group of entities with a separate lookup 
 }
 
-export type feces<jecs> = lib<jecs> & group & {
-	replicated: jecs.Component<PlayerObject>,
-	grouped: jecs.Component<group>,
+export type Feces = Lib & Group & {
+	jecs: Jecs,
+	world: World,
+	replicated: Component<PlayerObject>,
+	grouped: Component<Group>,
+
 	queries: {
-		single: jecs.Query,
-		pair: jecs.Query,
+		single: jecs.Query<Component<PlayerObject>>,
+		pair: jecs.Query<jecs.Pair<Component<PlayerObject>, jecs.Entity>>,
 	},
-	world: jecs.World,
-	pendingChanges: changes,
-	pendingDeletes: pendingDeletes,
-    storages: { [Component]: { [Entity]: { value: any, players: { Player } } } },
 
-	lookup: (self: feces, key: LocalEntity?, group: group?) -> LookupEntity,
-	ref: (self: feces, key: LookupEntity?, group: group?) -> LocalEntity,
+	_deleted: PendingDeletes,
+	_storages: Storages,
+	
+	lookup: (self: Feces, key: LocalEntity?, group: Group?) -> LookupEntity,
+	ref: (self: Feces, key: LookupEntity?, group: Group?) -> LocalEntity,
 
-	apply: (self: feces, delta: applyable, group: group?) -> nil,
-	delta: (self: feces, group: group?) -> (changes, deletes),
-	full: (self: feces, group: group?) -> applyable,
+	apply: (self: Feces, delta: Applyable, group: Group?) -> nil,
+	delta: (self: Feces, group: Group?) -> (Changes, Deletes),
+	full: (self: Feces, group: Group?) -> Applyable,
 
-	added: (self: feces, (Entity) -> nil) -> nil,
-	changed: (self: feces, (Entity, Component, any) -> nil) -> nil,
-	removed: (self: feces, (Entity, Component) -> nil) -> nil,
-	deleted: (self: feces, (Entity) -> nil) -> nil,
-	hooks: {
-		added: ((Entity) -> nil)?,
-		changed: ((Entity, Component, any) -> nil)?,
-		removed: ((Entity, Component) -> nil)?,
-		deleted: ((Entity) -> nil)?,
+	added: (self: Feces, (LocalEntity) -> nil) -> nil,
+	changed: (self: Feces, (LocalEntity, Component, any) -> nil) -> nil,
+	removed: (self: Feces, (LocalEntity, Component) -> nil) -> nil,
+	deleted: (self: Feces, (LocalEntity) -> nil) -> nil,
+	_hooks: {
+		added: ((LocalEntity) -> nil)?,
+		changed: ((LocalEntity, Component, any) -> nil)?,
+		removed: ((LocalEntity, Component) -> nil)?,
+		deleted: ((LocalEntity) -> nil)?,
 	},
+}
+
+return {
+	None = 0x1,
+	Remove = 0x2,
 }
