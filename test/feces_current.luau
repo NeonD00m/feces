@@ -5,14 +5,11 @@
 ]=]
 local Players = game and game:GetService("Players")
 local isServer = not game or game:GetService("RunService"):IsServer()
-local jecs = require(if game then "./roblox_packages/jecs" else "../luau_packages/jecs")
-local observers = game and require("../../../killergg+jecs_observers/0.1.0/jecs_observers/src")
-type World = observers.PatchedWorld
 
-local pair = jecs.pair
-local __ = jecs.Wildcard
+type Entity<T = any> = number & { __t: T }
 
-type Entity = jecs.Entity & number
+type LocalEntity = Entity
+type LookupEntity = Entity
 type Component<T = any> = jecs.Entity<T> & number
 
 type nilValue = "__n"
@@ -22,7 +19,13 @@ type deleteValue = "__d"
 local DELETE_VALUE: deleteValue = "__d"
 
 type PlayerObject = Player? | { Player } | (Player) -> boolean
-
+type refs = { [string]: Entity }
+type group = {
+	origin: string,
+	size: number,
+	lookups: { [LocalEntity]: LookupEntity }, -- get the replicatable lookup id from an entity in this world
+	refs: { [LookupEntity]: LocalEntity }, -- get the entity from this world from its replication lookup id
+}
 --[=[ 
 	@within feces
 	@type changes { [Component]: { [Player]: { value: { [Entity]: any }, special: { [Entity]: deleteValue | nilValue } } } }
@@ -32,7 +35,8 @@ type changes = {
 	[Component]: {
 		[Player]: {
 			value: { [Entity]: any },
-			special: { [Entity]: deleteValue | nilValue },
+			remove: { [Entity]: deleteValue },
+			nil: { [Entity]: nilValue },
 		},
 	},
 }
@@ -51,18 +55,21 @@ type deletes = {
 ]=]
 type applyable = {
 	[Component]: {
-		value: { [Entity]: any },
-		special: { [Entity]: deleteValue | nilValue },
+		value: { [LookupEntity]: any },
+		remove: { [LookupEntity]: deleteValue },
+		nil: { [LookupEntity]: deleteValue },
 	},
-} & { __d: { Entity } }
+} & { __d: { LookupEntity } }
 
-export type lib = {
-	new: (jecs.World) -> feces,
-	group: (changes, deletes?) -> { [Player]: applyable },
+export type lib<jecs> = {
+	new: (typeof(jecs.World)) -> feces,
+	combine: (changes, deletes?) -> { [Player]: applyable },
+	reserve: (size: number) -> group, -- creates a group of entities with a separate lookup 
 }
 
-export type feces = lib & {
-	replicated: jecs.Component,
+export type feces<jecs> = lib<jecs> & group & {
+	replicated: jecs.Component<PlayerObject>,
+	grouped: jecs.Component<group>,
 	queries: {
 		single: jecs.Query,
 		pair: jecs.Query,
@@ -70,18 +77,15 @@ export type feces = lib & {
 	world: jecs.World,
 	pendingChanges: changes,
 	pendingDeletes: deletes,
-	refs: { [string]: Entity },
     storages: { [Component]: { [Entity]: { value: any, players: { Player } } } },
 
-	ref: (self: feces, key: string?) -> Entity,
+	lookup: (self: feces, key: LocalEntity?, group: group?) -> LookupEntity,
+	ref: (self: feces, key: LookupEntity?, group: group?) -> LocalEntity,
 	-- replicating: (self: feces, (Component, PlayerObject, Entity, any, Component) -> nil) -> nil,
 
-	apply: (self: feces, applyable) -> nil, -- applies component changes to world
-	delta: (self: feces) -> (changes, deletes), -- gets the component changes to replicate
-
-	-- gets the entity deletions to replicate
-	full: (self: feces) -> applyable, -- gets all currently replicating components
-	group: (changes, deletes?) -> { [Player]: applyable },
+	apply: (self: feces, delta: applyable, group: group?) -> nil, -- applies component changes to world
+	delta: (self: feces, group: group?) -> (changes, deletes), -- gets the component changes and entity deletions to replicate
+	full: (self: feces, group: group?) -> applyable, -- gets all currently replicating components
 
 	-- hooks into applying replication
 	added: (self: feces, (Entity) -> nil) -> nil,
@@ -116,23 +120,14 @@ local function resolvePlayers(filter: PlayerObject): { Player? }
     end
 end
 
-local previous = {}
-
-local function fill(changes: changes, comp: Component, ent: Entity, value: any, players: { Player }, replicated)
+local function fill(changes: changes, comp: Component, ent: LookupEntity, value: any, players: { Player })
 	if not comp or not ent then
+		warn("[feces] Cannot fill changes with nil component or entity.")
         return
 	end
-	
-	if comp == replicated or ent == replicated then
-		return
-	end
-
-    -- EXTRACTED BECAUSE WE ONLY CALL fill() IN ONE PLACE
-	-- players = resolvePlayers(players)
 
 	for _, player in players do
         changes[comp] = changes[comp] or {}
-        previous[comp] = previous[comp] or {}
 		if game and (typeof(player) ~= "Instance" or not player:IsDescendantOf(Players)) then
             continue
         end
@@ -141,27 +136,93 @@ local function fill(changes: changes, comp: Component, ent: Entity, value: any, 
         if value == DELETE_VALUE or value == NIL_VALUE then
             entry.special[ent] = value
         else
-            previous[comp][ent] = value
-            entry.value   [ent] = value
+            entry.value[ent] = value
         end
         changes[comp][player] = entry
 	end
 end
 
-local function ref(self: feces, key: string?): Entity
-	local world = self.world
-	if not key then
-		return world:entity()
-	end
 
-	local refs = self.refs
-	local entity = refs[key]
-	if not entity then
+-- local group helper functions
+local function addToGroup(group: group, entity: LocalEntity): LookupEntity
+	table.insert(group.refs, entity)
+	local index = table.find(group.refs, entity) :: LookupEntity
+	group.lookups[entity] = index
+	self.world:set(entity, self.grouped, group)
+	if #group.refs >= group.size then
+		warn("[feces] Group is full, consider reserving a larger group size.\n\tA group created at {group.origin} exceeded {group.size}")
+	end
+	return index
+end
+
+local function removeFromGroup(group: group, entity: LocalEntity)
+	if #group.lookups == 0 then
+		warn("[feces] Group is empty, cannot remove the entity {entity} from the group.\n\tA group created at {group.origin} was empty when trying to remove entity {entity}")
+	end
+	self.world:remove(entity, self.grouped)
+	table.remove(group.refs, entity)
+	group.lookups[entity] = nil
+end
+
+
+-- group functionality
+local function ref(self: feces, key: LookupEntity?, group: group?): LocalEntity
+	local world = self.world
+	local entity: LocalEntity = nil
+	group = group or self
+	if not key then
 		entity = world:entity()
-		refs[key] = entity
+		addToGroup(group, entity)
+	else
+		local entity = group.refs[key]
+		if not entity then
+			entity = world:entity()
+			addToGroup(group, entity)
+		end
 	end
 
 	return entity
+end
+
+local function lookup(self: feces, entity: LocalEntity?, group: group?): LookupEntity
+	local world = self.world
+	local key: LookupEntity = nil
+	group = group or self
+	if not entity then
+		entity = world:entity()
+		key = addToGroup(group, entity)
+	else
+		key = group.lookups[entity]
+		if not key then
+			key = addToGroup(group, entity)
+		end
+	end
+
+	addToGroup(group or self.lookups, entity)
+
+	return key
+end
+
+--[=[
+	@within feces
+	Allows more efficient replication of entity changes by grouping entities' lookup ids.
+	```lua
+	local playerGroup = feces:reserve(16)
+	-- ...
+	world:set(playerEntity, feces.grouped, playerGroup)
+	-- ...
+	feces:delta(playerGroup) -- get packets for only the player entities
+	```
+]=]
+local function reserve(size: number): group
+	local scrpt, line, name = debug.info(3, "sln")
+	local origin = `{scrpt}:{line} {name}()`
+	print("[feces] reserving group", origin, size)
+	return {
+		origin = origin,
+		size = size,
+		lookups = {},
+	}
 end
 
 --[=[
@@ -175,73 +236,73 @@ end
 	})
 	```
 ]=]
-local function apply(self: feces, delta: applyable)
+local function apply(self: feces, delta: applyable, group: group?)
 	if not delta then
 	-- 	warn("NO APPLYABLE DATA RECEIVED")
 		return
 	end
 
 	-- print("APPLY HAS BEEN CALLED", delta)
-
+	group = group or self
 	for component, entities in delta :: { [any]: any } do
 		if not entities then
 			continue
 		end
 
 		if component == DELETE_VALUE then
-			for _, entity in entities do
-				local id = self:ref(`repl{entity}`)
+			for _, lookupEntity in entities do
+				local entity = self:ref(lookupEntity, group)
 				if self.hooks.deleted then
-					self.hooks.deleted(id)
+					self.hooks.deleted(entity)
 				end
-				self.world:delete(id)
+				self.world:delete(entity)
 			end
 			continue
 		end
 
-		local newEntities = {}
+		local newEntities: { LocalEntity } = {}
 
-		for entity: Entity, value in entities.value do
-			if not self.refs[`repl{entity}`] then
-				local id = self:ref(`repl{entity}`)
+		for lookupEntity: Entity, value in entities.value do
+			if not group.refs[lookupEntity] then
+				local entity: LocalEntity = self:ref(lookupEntity, group)
 				if self.hooks.changed then
-					self.hooks.changed(id, component, value)
+					self.hooks.changed(entity, component, value)
 				end
-				self.world:set(id, component, value)
+				self.world:set(entity, component, value)
 				if self.hooks.added then
-					newEntities[id] = true
+					newEntities[entity] = true
 				end
 			else
-				local id = self:ref(`repl{entity}`)
+				local entity: LocalEntity = self:ref(lookupEntity, group)
 				if self.hooks.changed then
-					self.hooks.changed(id, component, value)
+					self.hooks.changed(entity, component, value)
 				end
-				self.world:set(id, component, value)
+				self.world:set(entity, component, value)
 			end
 		end
 
-		for entity: Entity, value in entities.special do
-			local id = self:ref(`repl{entity}`)
+		for lookupEntity, value in entities.special do
+			local entity: LocalEntity = self:ref(lookupEntity, group)
 
 			if value == DELETE_VALUE then
 				if self.hooks.removed then
-					self.hooks.removed(id, component)
+					self.hooks.removed(entity, component)
 				end
-				self.world:remove(id, component)
+				self.world:remove(entity, component)
 				continue
 			end
 
 			local newValue = if value == NIL_VALUE then nil else value
 			if self.hooks.changed then
-				self.hooks.changed(id, component, newValue)
+				self.hooks.changed(entity, component, newValue)
 			end
 
-			self.world:set(id, component, newValue)
+			self.world:set(entity, component, newValue)
 		end
 
 		if self.hooks.added then
-			for id, _ in newEntities do
-				self.hooks.added(id)
+			for entity, _ in newEntities do
+				self.hooks.added(entity)
 			end
 		end
 	end
@@ -254,11 +315,25 @@ end
 	-- ... replicate however you'd like or see the examples [here](/docs/setup)
 	```
 ]=]
-local function delta(self: feces): (changes, deletes)
+local function delta(self: feces, group: group?): (changes, deletes)
     local changes, deletedMap = self.pendingChanges, self.pendingDeletes
+	group = group or self
 	-- print("FULL STORAGES", self.storages)
     for comp, storage in self.storages do
-        for ent, data in storage do
+		if comp == self.replicated or comp == self.grouped then
+			continue
+		end
+
+        for ent: LocalEntity, data in storage do
+			if ent == self.replicated or ent == self.grouped then
+				continue
+			end
+
+			local lookup: LookupEntity = group.lookups[ent]
+			if not lookup then
+				continue -- we only want the entities that are in this group
+			end
+
             local players = resolvePlayers(data.players) :: { Player }
             for i, player in players do
                 if deletedMap[player] and deletedMap[player][ent] then
@@ -266,8 +341,9 @@ local function delta(self: feces): (changes, deletes)
                     players[i] = nil
                 end
             end
+
             -- print("filling change:", ent, comp, data.value)
-            fill(changes, comp, ent, data.value, players, self.replicated)
+            fill(changes, comp, lookup, data.value, players)
         end
         table.clear(storage)
     end
@@ -276,7 +352,12 @@ local function delta(self: feces): (changes, deletes)
     for player, entities in deletedMap do
         deleted[player] = {}
         for entity, _ in entities do
-            table.insert(deleted[player], entity)
+			local lookup: LookupEntity = group.lookups[entity]
+			if not lookup then
+				continue -- we only want the entities that are in this group
+			end
+
+            table.insert(deleted[player], lookup)
         end
     end
 
@@ -288,14 +369,14 @@ end
 	Reformats the results of [`delta()`](/api/feces#delta) into an easier format to replicate.
 	Not optimal, but recommended if performance of feces-replicated entities is not a concern.
 	```lua
-	local dataByPlayer = feces.group(feces:delta())
+	local dataByPlayer = feces.combine(feces:delta())
 	for player, packet in dataByPlayer do
 		someRemote:FireClient(player, packet)
 	end
 	-- see more of this example [here](/docs/setup#simple)
 	```
 ]=]
-local function group(changes: changes, deleted: deletes?): { [Player]: applyable }
+local function combine(changes: changes, deleted: deletes?): { [Player]: applyable }
 	local packets: { [Player]: applyable } = {}
 
 	for component, players in changes do
@@ -320,7 +401,7 @@ local function group(changes: changes, deleted: deletes?): { [Player]: applyable
 
 	return packets
 end
-lib.group = group
+lib.combine = combine
 --[=[
 	@within feces
 	Gets all the currently replicating component and entity values.
@@ -333,20 +414,25 @@ lib.group = group
 	```
 ]=]
 
-local function full(self: feces): applyable
+local function full(self: feces, group: group?): applyable
 	local data = {} :: applyable
+	group = group or self
 
-	local function addEntity(component, player, entity, value)
+	local function addEntity(component, player, entity: LocalEntity, value: any)
 		if player then
 			return -- we only want publicly replicated data
+		end
+		local lookup: LookupEntity = group.lookups[entity]
+		if not lookup then
+			return -- we only want the entities that are in this group
 		end
 
 		value = value or NIL_VALUE
 		data[component] = data[component] or { value = {}, special = {} }
 		if value == DELETE_VALUE or value == NIL_VALUE then
-			(data[component].special :: any)[entity] = value
+			(data[component].special :: any)[lookup] = value
 		else
-			(data[component].value :: any)[entity] = value
+			(data[component].value :: any)[lookup] = value
 		end
 	end
 
@@ -359,7 +445,7 @@ local function full(self: feces): applyable
 
 		local columns = archetype.columns
 		local types = archetype.types
-		local record = archetype.records[self.replicated]
+		local record = archetype.types[self.replicated]
 		if not record then
 			continue
 		end
@@ -377,7 +463,7 @@ local function full(self: feces): applyable
 
 			for row, entity in entities do
 				local player = playerColumn[row]
-				addEntity(id :: Component, player, entity :: Entity, column[row])
+				addEntity(id :: Component, player, entity :: LocalEntity, column[row])
 			end
 		end
 	end
@@ -389,14 +475,14 @@ local function full(self: feces): applyable
 		end
 
 		local types = archetype.types
-		local records = archetype.records
+		local records = archetype.types
 
 		for _, id in types do
-			if not jecs.IS_PAIR(id) then
+			if not self.jecs.IS_PAIR(id) then
 				continue
 			end
 
-			if jecs.pair_first(self.world, id) ~= self.replicated then
+			if self.jecs.pair_first(self.world, id) ~= self.replicated then
 				continue -- it's a pair but the first component isn't replicated e.g pair(someComponent, someOtherComponent) instead of pair(replicated, someOtherComponent)
 			end
 
@@ -406,7 +492,7 @@ local function full(self: feces): applyable
 			end
 
 			local playerColumn = archetype.columns[record]
-			local component = jecs.pair_second(self.world, id)
+			local component = self.jecs.pair_second(self.world, id)
 			for row, entity in entities do
 				if not self.world:has(entity :: Entity, component :: Component) then
 					continue
@@ -461,11 +547,16 @@ local function deleted(self: feces, callback: (Entity) -> nil)
 	self.hooks.deleted = callback
 end
 
-function lib.new(world: World): feces
+function lib.new(jecs: jecs, world: World, group: group?): feces
 	--assume the user has already added observers to the world
 	local replicated = world:component()
+	local grouped = world:component()
+	jecs = testing_jecs or jecs
 	world:set(replicated, jecs.Name, "replicated")
+	world:set(replicated, jecs.Name, "grouped")
 	local self = {
+		size = math.huge,
+		jecs = jecs,
 		replicated = replicated,
 		queries = {
 			single = world:query(replicated):cached(),
@@ -475,18 +566,18 @@ function lib.new(world: World): feces
 		pendingChanges = {} :: changes,
 		pendingDeletes = {} :: { [Player]: { [Entity]: true } },
 		hooks = {},
-		refs = {},
+		refs = refs or {},
         storages = {},
 		ref = ref,
 		apply = apply,
 		delta = delta,
 		full = full,
-		group = group,
+		combine = combine,
 		added = added,
 		changed = changed,
 		removed = removed,
 		deleted = deleted,
-	} :: any
+	} :: feces
 	
 	if isServer then
         local function listen(comp)

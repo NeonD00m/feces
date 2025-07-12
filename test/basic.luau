@@ -5,10 +5,10 @@ local check = frktest.assert.check
 return function()
     local jecs = require("../luau_packages/jecs")
     local o = require("./observers")
-    local lib = require("./feces_NR2")
+    local lib = require("./feces_current")
 
     local function create()
-        return lib.new(o(jecs.World.new())) 
+        return lib.new(jecs, o(jecs.World.new())) 
     end
 
     test.suite("basic", function()
