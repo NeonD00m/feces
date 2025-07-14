@@ -5,31 +5,28 @@ local check = frktest.assert.check
 return function()
     local jecs = require("../luau_packages/jecs")
     local o = require("./observers")
-    local lib = require("./feces_current")
+    local lib = require("../pkgs/core/feces")
 
     local function create()
         return lib.new(jecs, o(jecs.World.new())) 
     end
 
     test.suite("basic", function()
-        test.case("setup", function()
-            check.truthy(create())
-        end)
-
         test.case("creating a group", function()
             local feces = create()
-            local group = feces:reserve(16)
+            local group = feces.reserve(16)
             check.table.equal(group, {
                 origin = "test/groups.luau:10 create()",
                 size = 16,
                 lookups = {},
                 refs = {},
             })
+            return nil
         end)
 
         test.case("adding entities to a group", function()
             local feces = create()
-            local group = feces:reserve(16)
+            local group = feces.reserve(16)
             local E1 = feces.world:entity()
             local E2 = feces.world:entity()
             local A = feces.world:component()
@@ -46,36 +43,42 @@ return function()
             check.table.equal(group.lookups, {
                 [E1] = 1,
             })
+            check.table.equal(feces.refs, { }) -- should be empty because feces won't make these until needed
+            check.table.equal(feces.lookups, { })
+            local changes, deleted = feces:delta(group)
             check.table.equal(feces.refs, {
                 E2
             })
             check.table.equal(feces.lookups, {
                 [E2] = 1,
             })
-            local changes, deleted = feces:delta(group)
             check.table.equal(changes, {
                 [A] = {
                     ["-1"] = {
                         value = {
                             [E1] = 1,
                         },
-                        special = {}
+                        remove = { },
+                        none = { },
                     }
                 }
             })
             check.table.equal(deleted, {})
-            local changes, deleted = feces:delta()
+            changes, deleted = feces:delta()
             check.table.equal(changes, {
                 [A] = {
                     ["-1"] = {
                         value = {
                             [E2] = 2,
                         },
-                        special = {}
+                        remove = { },
+                        none = { },
                     }
                 }
             })
             check.table.equal(deleted, {})
+            return nil
         end)
+        return nil
     end)
 end

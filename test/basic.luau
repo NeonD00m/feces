@@ -5,7 +5,7 @@ local check = frktest.assert.check
 return function()
     local jecs = require("../luau_packages/jecs")
     local o = require("./observers")
-    local lib = require("./feces_current")
+    local lib = require("../pkgs/core/feces")
 
     local function create()
         return lib.new(jecs, o(jecs.World.new())) 
@@ -13,7 +13,7 @@ return function()
 
     test.suite("basic", function()
         test.case("setup", function()
-            check.truthy(create())
+            return check.truthy(create())
         end)
 
         test.case("multiple components added", function()
@@ -21,7 +21,7 @@ return function()
             local E = feces.world:entity()
             local A = feces.world:component()
             local B = feces.world:component()
-            local initial, empty = feces:delta()
+            feces:delta()
             -- check.table.equal(initial, {})
             -- check.table.equal(empty, {})
             -- print("entity:", E)
@@ -43,7 +43,8 @@ return function()
                         value = {
                             [E] = 1
                         },
-                        special = {}
+                        remove = { },
+                        none = {},
                     }
                 },
                 [B] = {
@@ -51,11 +52,13 @@ return function()
                         value = {
                             [E] = 2
                         },
-                        special = {}
+                        remove = { },
+                        none = {},
                     }
                 }
             })
             check.table.equal(deleted, {})
+            return nil
         end)
 
         test.case("multiple components changed", function()
@@ -69,7 +72,7 @@ return function()
             feces.world:add(E, feces.replicated)
 
             -- call delta the first time to remove the initial state
-            local initial, removed = feces:delta()
+            feces:delta()
             -- print("initial", initial)
             -- print("removed", removed)
 
@@ -83,7 +86,8 @@ return function()
                         value = {
                             [E] = 3
                         },
-                        special = {},
+                        remove = { },
+                        none = {},
                     }
                 },
                 [B] = {
@@ -91,11 +95,13 @@ return function()
                         value = {
                             [E] = 4
                         },
-                        special = {},
+                        remove = { },
+                        none = {},
                     }
                 }
             })
             check.table.equal(deleted, {})
+            return nil
         end)
 
         test.case("multiple components removed", function()
@@ -117,21 +123,20 @@ return function()
                 [A] = {
                     ["-1"] = {
                         value = {},
-                        special = {
-                            [E] = "__d"
-                        },
+                        remove = { E },
+                        none = {},
                     }
                 },
                 [B] = {
                     ["-1"] = {
                         value = {},
-                        special = {
-                            [E] = "__d"
-                        },
+                        remove = { E },
+                        none = {},
                     }
                 }
             })
             check.table.equal(deleted, {})
+            return nil
         end)
 
         test.case("entity deleted", function()
@@ -154,6 +159,7 @@ return function()
             check.table.equal(deleted, {
                 ["-1"] = { E }
             })
+            return nil
         end)
 
         test.case("replicated deleted", function()
@@ -174,6 +180,7 @@ return function()
             check.table.equal(deleted, {
                 ["-1"] = { E }
             })
+            return nil
         end)
 
         test.case("singleton", function()
@@ -196,6 +203,7 @@ return function()
                 }
             })
             check.table.equal(deleted, {})
+            return nil
         end)
 
         test.case("full payload", function()
@@ -228,6 +236,7 @@ return function()
                     special = {}
                 }
             })
+            return nil
         end)
 
     --     test.case("contains", function()
@@ -265,5 +274,7 @@ return function()
     --         local b = { { a = 1 }, { a = 2 } }
     --         check.array.equal(a, b)
     --     end)
+
+        return nil
     end)
 end

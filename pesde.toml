@@ -25,5 +25,5 @@ scripts = { name = "pesde/scripts_rojo", version = "^0.1.0", target = "lune" }
 rojo = { name = "pesde/rojo", version = "^7.4.4", target = "lune" }
 frktest = { name = "itsfrank/frktest", version = "^0.0.2", target = "lune" }
 
-[dependencies]
-jecs = { wally = "ukendio/jecs", version = "^0.8.1", target = "luau" }
+# [dependencies]
+# jecs = { wally = "ukendio/jecs", version = "^0.8.1", target = "luau" }

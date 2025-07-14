@@ -2,7 +2,7 @@ local types = require("./types")
 local resolvePlayers = require("./resolvePlayers")
 local Players = game and game:GetService("Players")
 
-local function fill(changes: types.Changes, comp: types.Component, ent: types.LookupEntity, value: any, action: types.ChangeType, players: { types.TestPlayer })
+local function fill(changes: types.Changes, comp: types.Component, ent: types.LookupEntity, value: any, action: types.ChangeType?, players: { types.TestPlayer })
 	if not comp or not ent then
 		warn("[feces] Cannot fill changes with nil component or entity.")
         return
@@ -40,7 +40,7 @@ local function delta(self: types.Feces, group: types.Group?): (types.Changes, ty
 			end
 
 			local lookup: types.LookupEntity = group.lookups[ent]
-			if not lookup then
+			if lookup == nil then
 				continue -- we only want the entities that are in this group
 			end
 

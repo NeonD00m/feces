@@ -5,7 +5,7 @@ local check = frktest.assert.check
 return function()
     local jecs = require("../luau_packages/jecs")
     local o = require("./observers")
-    local lib = require("./feces_current")
+    local lib = require("../pkgs/core/feces")
 
     local function create()
         return lib.new(jecs, o(jecs.World.new())) 
@@ -23,13 +23,13 @@ return function()
                 [A] = {
                     ["-1"] = {
                         value = {},
-                        special = {
-                            [E] = "__n"
-                        }
+                        remove = { },
+                        none = { E },
                     }
                 }
             })
             check.table.equal(deleted, {})
+            return nil
         end)
 
         test.case("pair valid - nil", function()
@@ -43,13 +43,13 @@ return function()
                 [A] = {
                     ["-1"] = {
                         value = {},
-                        special = {
-                            [E] = "__n"
-                        }
+                        remove = { },
+                        none = { E },
                     }
                 }
             })
             check.table.equal(deleted, {})
+            return nil
         end)
 
         test.case("pair invalid - specific", function()
@@ -61,6 +61,7 @@ return function()
             local changes, deleted = feces:delta()
             check.table.equal(changes, {})
             check.table.equal(deleted, {})
+            return nil
         end)
 
         test.case("pair invalid - empty", function()
@@ -72,6 +73,7 @@ return function()
             local changes, deleted = feces:delta()
             check.table.equal(changes, {})
             check.table.equal(deleted, {})
+            return nil
         end)
 
         test.case("valid filter - table", function()
@@ -85,13 +87,13 @@ return function()
                 [A] = {
                     ["-1"] = {
                         value = {},
-                        special = {
-                            [E] = "__n"
-                        }
+                        remove = { },
+                        none = { E },
                     }
                 }
             })
             check.table.equal(deleted, {})
+            return nil
         end)
 
         test.case("valid filter - function", function()
@@ -105,13 +107,13 @@ return function()
                 [A] = {
                     ["-1"] = {
                         value = {},
-                        special = {
-                            [E] = "__n"
-                        }
+                        remove = { },
+                        none = { E },
                     }
                 }
             })
             check.table.equal(deleted, {})
+            return nil
         end)
 
         test.case("valid filter - table", function()
@@ -123,6 +125,7 @@ return function()
             local changes, deleted = feces:delta()
             check.table.equal(changes, {})
             check.table.equal(deleted, {})
+            return nil
         end)
 
         test.case("valid filter - function", function()
@@ -134,8 +137,10 @@ return function()
             local changes, deleted = feces:delta()
             check.table.equal(changes, {})
             check.table.equal(deleted, {})
+            return nil
         end)
     
         -- PAIRS WITH FILTERS?
+        return nil
     end)
 end

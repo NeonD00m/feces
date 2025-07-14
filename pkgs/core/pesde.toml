@@ -7,18 +7,21 @@ license = "MIT"
 
 includes = [
   "pesde.toml",
-  "../README.md",
-  "LICENSE",
-  "feces.luau",
+  "../../README.md",
+  "../../LICENSE",
+  "../../feces/**",
 ]
 
 [target]
 environment = "roblox"
-lib = "feces.luau"
-build_files = ["feces.luau"]
+lib = "../../feces/init.luau"
+build_files = ["../../feces"]
 
 [indices]
 default = "https://github.com/pesde-pkg/index"
+
+[wally_indices]
+default = "https://github.com/UpliftGames/wally-index"
 
 [scripts]
 roblox_sync_config_generator = ".pesde/scripts/roblox_sync_config_generator.luau"
@@ -29,4 +32,4 @@ scripts = { name = "pesde/scripts_rojo", version = "^0.1.0", target = "lune" }
 rojo = { name = "pesde/rojo", version = "^7.4.4", target = "lune" }
 
 [dependencies]
-jecs = { name = "marked/jecs", version = "^0.6.0" }
+jecs = { wally = "ukendio/jecs", version = "^0.8.1", target = "roblox" }

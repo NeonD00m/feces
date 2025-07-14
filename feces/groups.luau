@@ -1,12 +1,9 @@
 local types = require("./types")
 
-type LocalEntity = types.LocalEntity
-type LookupEntity = types.LookupEntity
-
 local function addToGroup(self: types.Feces, group: types.Group, entity: types.LocalEntity): types.LookupEntity
-	table.insert(group.refs, entity)
+	table.insert(group.refs :: { types.LocalEntity }, entity)
 
-	local index = table.find(group.refs, entity) :: LookupEntity
+	local index: types.LookupEntity = table.find(group.refs :: { types.LocalEntity }, entity) :: any
 	group.lookups[entity] = index
 	self.world:set(entity, self.grouped, group)
 
@@ -24,25 +21,18 @@ local function removeFromGroup(self: types.Feces, group: types.Group, entity: ty
 
 	self.world:remove(entity, self.grouped)
 
-	table.remove(group.refs, entity)
+	table.remove(group.refs :: { types.LocalEntity }, entity)
 	group.lookups[entity] = nil
 end
 
 -- group functionality
 local function ref(self: types.Feces, key: types.LookupEntity?, group: types.Group?): types.LocalEntity
 	local world = self.world
-	local entity: LocalEntity = {}
 	group = group or self
+	local entity: types.LocalEntity = if not key then (world:entity() :: any) else group.refs[key]
 	
-	if not key then
-		entity = world:entity()
+	if not group.lookups[entity] then
 		addToGroup(self, group, entity)
-	else
-		entity = group.refs[key]
-		if not entity then
-			entity = world:entity()
-			addToGroup(self, group, entity)
-		end
 	end
 
 	return entity
@@ -50,10 +40,10 @@ end
 
 local function lookup(self: types.Feces, entity: types.LocalEntity?, group: types.Group?): types.LookupEntity
 	local world = self.world
-	local key: LookupEntity = nil
+	local key: types.LookupEntity = nil :: any
 	group = group or self
 	if not entity then
-		entity = world:entity()
+		entity = world:entity() :: any
 		key = addToGroup(self, group, entity)
 	else
 		key = group.lookups[entity]
@@ -66,7 +56,7 @@ local function lookup(self: types.Feces, entity: types.LocalEntity?, group: type
 end
 
 local function reserve(size: number): types.Group
-	local scrpt, line, name = debug.info(3, "sln") -- TODO: Remove or hide behind DEBUG variable (bad performance)
+	local scrpt, line, name = debug.info(3, "sln")
 	local origin = `{scrpt}:{line} {name}()`
 	print("[feces] reserving group", origin, size)
     

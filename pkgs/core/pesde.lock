@@ -94,14 +94,6 @@ resolved_ty = "standard"
 ref_ty = "pesde"
 index_url = "https://github.com/daimond113/pesde-index"
 
-[graph."marked/jecs@0.6.0 roblox"]
-direct = ["jecs", { name = "marked/jecs", version = "^0.6.0", index = "default" }, "standard"]
-resolved_ty = "standard"
-
-[graph."marked/jecs@0.6.0 roblox".pkg_ref]
-ref_ty = "pesde"
-index_url = "https://github.com/pesde-pkg/index"
-
 [graph."pesde/rojo@7.4.4 lune"]
 direct = ["rojo", { name = "pesde/rojo", version = "^7.4.4", index = "default", target = "lune" }, "dev"]
 resolved_ty = "dev"
@@ -169,3 +161,11 @@ option = [{ name = "lukadev_0/option", version = "^1.2.0", index = "https://gith
 pathfs = [{ name = "jiwonz/pathfs", version = "^0.3.0", index = "https://github.com/pesde-pkg/index" }, "standard"]
 result = [{ name = "lukadev_0/result", version = "^1.2.0", index = "https://github.com/pesde-pkg/index" }, "peer"]
 unzip = [{ name = "0x5eal/unzip", version = "^0.1.0", index = "https://github.com/pesde-pkg/index", target = "luau" }, "standard"]
+
+[graph."wally#ukendio/jecs@0.8.3 roblox"]
+direct = ["jecs", { wally = "wally#ukendio/jecs", version = "^0.8.1", index = "default" }, "standard"]
+resolved_ty = "standard"
+
+[graph."wally#ukendio/jecs@0.8.3 roblox".pkg_ref]
+ref_ty = "wally"
+index_url = "https://github.com/UpliftGames/wally-index"

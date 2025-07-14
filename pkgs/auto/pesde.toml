@@ -20,6 +20,9 @@ build_files = ["auto.luau"]
 [indices]
 default = "https://github.com/pesde-pkg/index"
 
+[wally_indices]
+default = "https://github.com/UpliftGames/wally-index"
+
 [scripts]
 roblox_sync_config_generator = ".pesde/scripts/roblox_sync_config_generator.luau"
 sourcemap_generator = ".pesde/scripts/sourcemap_generator.luau"
@@ -30,6 +33,5 @@ rojo = { name = "pesde/rojo", version = "^7.4.4", target = "lune" }
 
 [dependencies]
 core = { workspace = "killergg/feces_core", version = "^" }
-world = { name = "killergg/jecs_world", version = "^0.1.5" }
-refs = { name = "killergg/jecs_refs", version = "^0.1.0" }
 observers = { name = "killergg/jecs_observers", version = "^0.2.0" }
+jecs = { wally = "ukendio/jecs", version = "^0.8.1", target = "roblox" }

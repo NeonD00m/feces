@@ -18,12 +18,12 @@ local lib = {
     combine = combine,
     new = function(jecs: types.Jecs, world: types.World, group: types.Group?): types.Feces
         --assume the user has already added observers to the world
-        local replicated = world:component() :: types.Component<types.PlayerObject>
-        local grouped = world:component() :: types.Component<types.Group>
+        local replicated: types.Component<types.PlayerObject> = world:component() :: any
+        local grouped: types.Component<types.Group> = world:component() :: any
         world:set(replicated, jecs.Name, "replicated")
         world:set(grouped, jecs.Name, "grouped")
 
-        local storages = {}
+        local storages: types.Storages = {}
 
         local feces = {
             jecs = jecs,
@@ -66,33 +66,33 @@ local lib = {
             local isTag = jecs.is_tag(world, component)
 
             world:added(component, function(ent, _, val)
-                storages[component][ent] = { value = val, players = if game then Players:GetPlayers() else { "-1" } }
+                storages[component][ent] = { value = val, action = if val == nil then types.None else nil, players = (if game then Players:GetPlayers() else { "-1" }) :: { types.TestPlayer } }
             end)
 
             if not isTag then
                 world:changed(component, function(ent, _, val)
-                    storages[component][ent] = { value = val, players = if game then Players:GetPlayers() else { "-1" } }
+                    storages[component][ent] = { value = val, players = (if game then Players:GetPlayers() else { "-1" }) :: { types.TestPlayer } }
                 end)
             end
 
 			world:removed(component, function(ent)
-                storages[component][ent] = { value = DELETE_VALUE, players = if game then Players:GetPlayers() else { "-1" } }
+                storages[component][ent] = { action = types.Remove, players = (if game then Players:GetPlayers() else { "-1" }) :: { types.TestPlayer } }
             end)
         end
 
         for component in world.component_index do
-            if component ~= replicated and not (jecs.IS_PAIR(component) and jecs.pair_first(world, component) == replicated) then
-                listen(component)
+            if (component :: any) ~= replicated and not (jecs.IS_PAIR(component) and jecs.pair_first(world, component) == replicated) then
+                listen(component :: any)
             end
         end
 
         setmetatable(world.component_index, {
-            __newindex = function(tbl, comp, val)
+            __newindex = function(tbl, comp: any, val)
                 rawset(tbl, comp, val)
                 if val and comp ~= replicated
-                   and not (jecs.IS_PAIR(comp) and jecs.pair_first(world, comp) == replicated)
+                   and not (jecs.IS_PAIR(comp :: any) and jecs.pair_first(world, comp :: any) == replicated)
                 then
-                    listen(comp)
+                    listen(comp :: any)
                 end
             end,
         })
@@ -102,7 +102,6 @@ local lib = {
             for _, player in resolvePlayers(filter) do
                 feces.pendingDeletes[player] = feces.pendingDeletes[player] or {}
                 feces.pendingDeletes[player][ent] = true
-                -- table.insert(self.pendingDeletes[player], ent)
             end
         end)
         

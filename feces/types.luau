@@ -2,23 +2,25 @@ local jecs = require("../../luau_packages/jecs")
 
 export type Jecs = typeof(jecs)
 
+type Entity<T = any> = jecs.Entity<T> & number
+
 type Observer = {
-	callback: (jecs.Entity) -> (),
+	callback: (Entity) -> (),
 	query: jecs.Query<...jecs.Id>,
 }
 
 export type World = jecs.World & {
-	added: <T>(World, jecs.Id<T>, (jecs.Entity, jecs.Id, T) -> ()) -> () -> (),
-	removed: <T>(World, jecs.Id<T>, (jecs.Entity, jecs.Id) -> ()) -> () -> (),
-	changed: <T>(World, jecs.Id<T>, (jecs.Entity, jecs.Id, T) -> ()) -> () -> (),
+	added: <T>(World, jecs.Id<T>, (Entity, jecs.Id, T) -> ()) -> () -> (),
+	removed: <T>(World, jecs.Id<T>, (Entity, jecs.Id) -> ()) -> () -> (),
+	changed: <T>(World, jecs.Id<T>, (Entity, jecs.Id, T) -> ()) -> () -> (),
 	observer: (World, Observer) -> (),
-	deleted: <T>(World, jecs.Entity, (jecs.Entity) -> ()) -> (),
+	deleted: <T>(World, Entity, (Entity) -> ()) -> (),
 	monitor: (World, Observer) -> (),
 }
 
-export type LocalEntity = jecs.Entity
-export type LookupEntity = jecs.Entity
-export type Component<T = any> = jecs.Entity<T>
+export type LocalEntity = Entity
+export type LookupEntity = Entity
+export type Component<T = any> = Entity<T>
 
 export type None = number
 export type Remove = number
@@ -56,7 +58,7 @@ export type PendingDeletes = {
 export type Storages = {
 	[Component]: {
 		[LocalEntity]: {
-			action: ChangeType,
+			action: ChangeType?,
 			value: any?,
 			players: { TestPlayer }
 		}
@@ -71,13 +73,13 @@ export type Applyable = {
 	[Component]: {
 		[LookupEntity]: {
 			value: any,
-			action: ChangeType
+			action: ChangeType?
 		}
 	}
 } & { __d: { LookupEntity } }
 
 export type Lib = {
-	new: (World) -> Feces,
+	new: (Jecs, World, Group?) -> Feces,
 	combine: (Changes, Deletes?) -> { [TestPlayer]: Applyable },
 	reserve: (number) -> Group, -- creates a group of entities with a separate lookup 
 }
@@ -118,4 +120,5 @@ export type Feces = Lib & Group & {
 return {
 	None = 0x1,
 	Remove = 0x2,
+	Delete = "__d",
 }

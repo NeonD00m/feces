@@ -110,14 +110,6 @@ resolved_ty = "standard"
 ref_ty = "pesde"
 index_url = "https://github.com/daimond113/pesde-index"
 
-[graph."marked/jecs@0.6.0 luau"]
-direct = ["jecs", { name = "marked/jecs", version = "^0.6.0", index = "default", target = "luau" }, "standard"]
-resolved_ty = "standard"
-
-[graph."marked/jecs@0.6.0 luau".pkg_ref]
-ref_ty = "pesde"
-index_url = "https://github.com/pesde-pkg/index"
-
 [graph."pesde/rojo@7.4.4 lune"]
 direct = ["rojo", { name = "pesde/rojo", version = "^7.4.4", index = "default", target = "lune" }, "dev"]
 resolved_ty = "dev"

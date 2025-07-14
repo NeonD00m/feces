@@ -4,24 +4,23 @@ local function full(self: types.Feces, group: types.Group?): types.Applyable
 	local data = {} :: types.Applyable
 	group = group or self
 
-	local function addEntity(component, player, entity: LocalEntity, value: any)
+	local function addEntity(component, player, entity: types.LocalEntity, value: any, action: types.ChangeType?)
 		if player then
 			return -- we only want publicly replicated data
 		end
-		local lookup: types.LookupEntity = group.lookups[entity]
-		if not lookup then
+		local lookup: types.LookupEntity = (group :: types.Group).lookups[entity]
+		if lookup == nil then
 			return -- we only want the entities that are in this group
 		end
 
-		value = value or NIL_VALUE
-		data[component] = data[component] or { value = {}, special = {} }
-		if value == DELETE_VALUE or value == NIL_VALUE then
-			(data[component].special :: any)[lookup] = value
-		else
-			(data[component].value :: any)[lookup] = value
+		data[component] = data[component] or { [lookup] = {} }
+		if not data[component][lookup] then
+			data[component][lookup] = { }
 		end
-	end
 
+		data[component][lookup].action = action
+		data[component][lookup].value = value
+	end
 
 	for _, archetype in self.queries.single:archetypes() do
 		local entities = archetype.entities
@@ -39,7 +38,7 @@ local function full(self: types.Feces, group: types.Group?): types.Applyable
 
 		local playerColumn = columns[record]
 		for key, id in types do
-			if id == self.replicated :: number then
+			if id == self.replicated then
 				continue
 			end
 			local column = columns[key]
@@ -49,7 +48,7 @@ local function full(self: types.Feces, group: types.Group?): types.Applyable
 
 			for row, entity in entities do
 				local player = playerColumn[row]
-				addEntity(id :: types.Component, player, entity :: types.LocalEntity, column[row])
+				addEntity(id :: any, player, entity :: any, column[row])
 			end
 		end
 	end
@@ -64,11 +63,11 @@ local function full(self: types.Feces, group: types.Group?): types.Applyable
 		local records = archetype.types
 
 		for _, id in types do
-			if not self.jecs.IS_PAIR(id) then
+			if not self.jecs.IS_PAIR(id :: any) then
 				continue
 			end
 
-			if self.jecs.pair_first(self.world, id) ~= self.replicated then
+			if self.jecs.pair_first(self.world, id :: any) ~= self.replicated then
 				continue -- it's a pair but the first component isn't replicated e.g pair(someComponent, someOtherComponent) instead of pair(replicated, someOtherComponent)
 			end
 
@@ -78,17 +77,17 @@ local function full(self: types.Feces, group: types.Group?): types.Applyable
 			end
 
 			local playerColumn = archetype.columns[record]
-			local component = self.jecs.pair_second(self.world, id)
+			local component: types.Component = self.jecs.pair_second(self.world, id :: any) :: any
 			for row, entity in entities do
-				if not self.world:has(entity :: types.Entity, component :: Component) then
-					continue
+				if not (self.world.has :: any)(self.world, entity, component) then
+					continue -- what has my life become
 				end
 
 				addEntity(
-					component :: Component,
+					component,
 					playerColumn[row],
-					entity :: Entity,
-					self.world:get(entity :: types.Entity, component :: Component)
+					entity :: any,
+					(self.world.get :: any)(self.world, entity, component)
 				)
 			end
 		end

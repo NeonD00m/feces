@@ -1,10 +1,7 @@
 local core = require("./roblox_packages/core")
-local world = require("./roblox_packages/world")
-local refs = require("./roblox_packages/refs")
 local observers = require("./roblox_packages/observers")
+local jecs = require("./roblox_packages/jecs")
 
-
-local feces = core.new(observers(world))
-feces.refs = refs
+local feces = core.new(jecs, observers(jecs.World.new()))
 
 return feces
