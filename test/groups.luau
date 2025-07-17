@@ -3,12 +3,12 @@ local test = frktest.test
 local check = frktest.assert.check
 
 return function()
-    local jecs = require("../luau_packages/jecs")
-    local o = require("./observers")
-    local lib = require("../pkgs/core/feces")
+    local jecs = require("@test/jecs_0_8_3")
+    local o = require("@test/observers")
+    local lib = require("@feces/init.luau")
 
     local function create()
-        return lib.new(jecs, o(jecs.World.new())) 
+        return lib.new(jecs, o(jecs.world()), nil, true) 
     end
 
     test.suite("basic", function()
@@ -16,7 +16,7 @@ return function()
             local feces = create()
             local group = feces.reserve(16)
             check.table.equal(group, {
-                origin = "test/groups.luau:10 create()",
+                origin = `[string "test\\\groups.luau"]:17 ()`,
                 size = 16,
                 lookups = {},
                 refs = {},

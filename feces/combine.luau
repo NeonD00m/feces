@@ -1,4 +1,4 @@
-local types = require("./types")
+local types = require("@feces/types")
 
 local function combine(changes: types.Changes, deleted: types.Deletes?): { [types.TestPlayer]: types.Applyable }
 	local packets: { [types.TestPlayer]: types.Applyable } = {}

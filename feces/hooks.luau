@@ -1,4 +1,4 @@
-local types = require("./types")
+local types = require("@feces/types")
 
 local function added(self: types.Feces, callback: (types.LocalEntity) -> nil)
 	self._hooks.added = callback

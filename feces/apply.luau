@@ -1,15 +1,15 @@
-local types = require("./types")
+local types = require("@feces/types")
 
 local function apply(self: types.Feces, delta: types.Applyable, group: types.Group?)
 	if not delta then
 		return
 	end
-
+	local hasGroup = group ~= nil
 	group = group or self
 	for component, entities in delta do
 		if component == types.Delete then
 			for _, lookupEntity: types.LookupEntity in entities do
-				local entity = group.refs[lookupEntity] :: types.LocalEntity?
+				local entity: types.LocalEntity? = if hasGroup then group.refs[lookupEntity] else self:ref(lookupEntity)
 				if entity == nil then
 					continue
 				end

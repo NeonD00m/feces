@@ -1,41 +1,75 @@
-local jecs = require("../luau_packages/jecs")
+--!strict
+local jecs = require("./jecs_0_8_3")
 
-type Observer = {
-	callback: (jecs.Entity) -> (),
-	query: jecs.Query<...jecs.Id>,
-}
+type Description<T...> = jecs.Query<T...>
+
+type ObserverArm = (<a>(
+	PatchedWorld,
+	{
+		query: jecs.Query<a>,
+		callback: ((jecs.Entity) -> ())?
+	}
+) -> () -> () -> (jecs.Entity)) & (<a, b>(
+	PatchedWorld,
+	{
+		query: jecs.Query<a, b>,
+		callback: ((jecs.Entity) -> ())?
+	}
+) -> () -> () -> (jecs.Entity)) & (<a, b, c>(
+	PatchedWorld,
+	{
+		query: jecs.Query<a, b, c>,
+		callback: ((jecs.Entity) -> ())?
+	}
+) -> () -> () -> (jecs.Entity))
 
 export type PatchedWorld = jecs.World & {
-	added: <T>(PatchedWorld, jecs.Id<T>, (jecs.Entity, jecs.Id, T) -> ()) -> () -> (),
-	removed: <T>(PatchedWorld, jecs.Id<T>, (jecs.Entity, jecs.Id) -> ()) -> () -> (),
-	changed: <T>(PatchedWorld, jecs.Id<T>, (jecs.Entity, jecs.Id, T) -> ()) -> () -> (),
-	observer: (PatchedWorld, Observer) -> (),
-	monitor: (PatchedWorld, Observer) -> (),
+	added: <T>(PatchedWorld, jecs.Id<T>, <e>(e: jecs.Entity<e>, id: jecs.Id<T>, value: T?) -> ()) -> () -> (),
+	removed: <T>(PatchedWorld, jecs.Id<T>, (e: jecs.Entity, id: jecs.Id) -> ()) -> () -> (),
+	changed:  <T>(PatchedWorld, jecs.Id<T>, <e>(e: jecs.Entity<e>, id: jecs.Id<T>, value: T) -> ()) -> () -> (),
+	observer: ObserverArm & any,
+	monitor: ObserverArm & any
 }
 
-local function observers_new(world, description)
-	local query = description.query
-	local callback = description.callback
-	local terms = query.filter_with :: { jecs.Id }
-	if not terms then
-		local ids = query.ids
-		query.filter_with = ids
-		terms = ids
+local function observers_new(
+	world: PatchedWorld,
+	query: any,
+	callback: (<T, a>(jecs.Entity<T>, jecs.Id<a>, value: a?) -> ())?
+)
+	query = query:cached()
+
+	local archetypes = {}
+	local terms = query.ids
+	local first = terms[1]
+
+	local observers_on_create = world.observable[jecs.ArchetypeCreate][first]
+	observers_on_create[#observers_on_create].callback = function(archetype)
+		archetypes[archetype.id] = true
+	end
+	local observers_on_delete = world.observable[jecs.ArchetypeDelete][first]
+	observers_on_delete[#observers_on_delete].callback = function(archetype)
+		archetypes[archetype.id] = nil
 	end
 
 	local entity_index = world.entity_index :: any
-	local function emplaced(entity, id, value)
-		local r = jecs.entity_index_try_get_fast(
-			entity_index, entity :: any)
+	local i = 0
+	local entities = {}
 
-		if not r then
-			return
-		end
+	local function emplaced<T, a>(
+		entity: jecs.Entity<T>,
+		id: jecs.Id<a>,
+		value: a?
+	)
+		local r = entity_index.sparse_array[jecs.ECS_ID(entity)]
 
 		local archetype = r.archetype
 
-		if jecs.query_match(query, archetype) then
-			callback(entity)
+		if archetypes[archetype.id] then
+			i += 1
+			entities[i] = entity
+			if callback ~= nil then
+				callback(entity, id, value)
+			end
 		end
 	end
 
@@ -43,8 +77,20 @@ local function observers_new(world, description)
 		world:added(term, emplaced)
 		world:changed(term, emplaced)
  	end
-end
 
+  	return function()
+  		local row = i
+  		return function()
+ 			if row == 0 then
+     			i = 0
+	      		table.clear(entities)
+      		end
+           	local entity = entities[row]
+           	row -= 1
+           	return entity
+		end
+    end
+end
 
 local function join(world, component)
 	local sparse_array = {}
@@ -90,44 +136,49 @@ local function join(world, component)
 	end
 end
 
-local function monitors_new(world, description)
-	local query = description.query
-	local callback = description.callback
-	local terms = query.filter_with :: { jecs.Id }
-	if not terms then
-		local ids = query.ids
-		query.filter_with = ids
-		terms = ids
+local function monitors_new(world, query, callback)
+	query = query:cached()
+
+	local archetypes = {}
+	local terms = query.ids
+	local first = terms[1]
+
+	local observers_on_create = world.observable[jecs.ArchetypeCreate][first]
+	observers_on_create[#observers_on_create].callback = function(archetype)
+		archetypes[archetype.id] = true
+	end
+	local observers_on_delete = world.observable[jecs.ArchetypeDelete][first]
+	observers_on_delete[#observers_on_delete].callback = function(archetype)
+		archetypes[archetype.id] = nil
 	end
 
 	local entity_index = world.entity_index :: any
-	local function emplaced(entity: jecs.Entity)
-		local r = jecs.entity_index_try_get_fast(
-			entity_index, entity :: any)
+	local i = 0
+	local entities = {}
 
-		if not r then
-			return
-		end
+	local function emplaced<T, a>(
+		entity: jecs.Entity<T>,
+		id: jecs.Id<a>,
+		value: a?
+	)
+		local r = jecs.entity_index_try_get_fast(
+			entity_index, entity :: any) :: jecs.Record
 
 		local archetype = r.archetype
 
-		if jecs.query_match(query, archetype) then
-			callback(entity, jecs.OnAdd)
+		if archetypes[archetype.id] then
+			i += 1
+			entities[i] = entity
+			if callback ~= nil then
+				callback(entity, id, value)
+			end
 		end
 	end
 
 	local function removed(entity: jecs.Entity, component: jecs.Id)
-		local r = jecs.entity_index_try_get_fast(
-			entity_index, entity :: any)
-
-		if not r then
-			return
-		end
-
-		local archetype = r.archetype
-
-		if jecs.query_match(query, archetype) then
-			callback(entity, jecs.OnRemove)
+		local EcsOnRemove = jecs.OnRemove :: jecs.Id
+		if callback ~= nil then
+			callback(entity, EcsOnRemove)
 		end
 	end
 
@@ -135,6 +186,19 @@ local function monitors_new(world, description)
 		world:added(term, emplaced)
 		world:removed(term, removed)
  	end
+
+	return function()
+		local row = i
+		return function()
+			if row == 0 then
+				i = 0
+				table.clear(entities)
+			end
+			local entity = entities[row]
+			row -= 1
+			return entity
+		end
+	end
 end
 
 local function observers_add(world: jecs.World): PatchedWorld
@@ -145,8 +209,7 @@ local function observers_add(world: jecs.World): PatchedWorld
 	local signals = {
 		added = {} :: Signal,
 		emplaced = {} :: Signal,
-		removed = {} :: Signal,
-        deleted = {} :: Signal
+		removed = {} :: Signal
 	}
 
 	world_mut.added = function<T>(
@@ -159,18 +222,19 @@ local function observers_add(world: jecs.World): PatchedWorld
 			listeners = {}
 			signals.added[component] = listeners
 
-			local function on_add(entity: number, id: number, value: any)
+			local function on_add(entity, id, value)
 				for _, listener in listeners :: any do
 					listener(entity, id, value)
 				end
 			end
+			local existing_hook = world:get(component, jecs.OnAdd)
+			if existing_hook then
+				table.insert(listeners, existing_hook)
+			end
+
 			local idr = world.component_index[component]
 			if idr then
-				local idr_hook_existing = idr.hooks.on_add
-				if idr_hook_existing then
-					table.insert(listeners, idr_hook_existing)
-				end
-				idr.hooks.on_add = on_add :: any
+				idr.on_add = on_add
 			else
 				world:set(component, jecs.OnAdd, on_add)
 			end
@@ -193,18 +257,18 @@ local function observers_add(world: jecs.World): PatchedWorld
 		if not listeners then
 			listeners = {}
 			signals.emplaced[component] = listeners
-			local function on_change(entity: number, id: number, value: any)
+			local function on_change(entity, id, value: any)
 				for _, listener in listeners :: any do
 					listener(entity, id, value)
 				end
 			end
+			local existing_hook = world:get(component, jecs.OnChange)
+			if existing_hook then
+				table.insert(listeners, existing_hook)
+			end
 			local idr = world.component_index[component]
 			if idr then
-				local idr_hook_existing = idr.hooks.on_change
-				if idr_hook_existing then
-					table.insert(listeners, idr_hook_existing)
-				end
-				idr.hooks.on_change = on_change :: any
+				idr.on_change = on_change
 			else
 				world:set(component, jecs.OnChange, on_change)
 			end
@@ -227,53 +291,31 @@ local function observers_add(world: jecs.World): PatchedWorld
 		if not listeners then
 			listeners = {}
 			signals.removed[component] = listeners
-			local function on_remove(entity: number, id: number, value: any)
+			local function on_remove(entity, id)
 				for _, listener in listeners :: any do
-					listener(entity, id, value)
+					listener(entity, id)
 				end
 			end
+			local existing_hook = world:get(component, jecs.OnRemove)
+			if existing_hook then
+				table.insert(listeners, existing_hook)
+			end
+
 			local idr = world.component_index[component]
 			if idr then
-				local idr_hook_existing = idr.hooks.on_remove
-				if idr_hook_existing then
-					table.insert(listeners, idr_hook_existing)
-				end
-				idr.hooks.on_remove = on_remove :: any
+				idr.on_remove = on_remove
 			else
 				world:set(component, jecs.OnRemove, on_remove)
 			end
 		end
+
 		table.insert(listeners, fn)
+
 		return function()
 			local n = #listeners
 			local i = table.find(listeners, fn)
 			listeners[i] = listeners[n]
 			listeners[n] = nil
-		end
-	end
-
-    local on_delete = nil
-	world_mut.deleted = function(_, entity, fn)
-		local listeners = signals.deleted[entity]
-		if not listeners then
-			listeners = {}
-			signals.deleted[entity] = listeners
-			on_delete = function(id)
-				if id == entity then
-					for _, listener in listeners do
-						listener()
-					end
-				end
-			end
-		end
-		table.insert(listeners, fn)
-	end
-
-	local world_delete = world.delete
-	world.delete = function(world, entity)
-		world_delete(world, entity)
-		if on_delete then
-			on_delete(entity)
 		end
 	end
 

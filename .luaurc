@@ -3,7 +3,9 @@
   "aliases": {
     "main": "./src/",
     "lune": "~/.lune/.typedefs/0.8.3/",
-    "pkg": "./lune_packages/"
+    "pkg": "./lune_packages/",
+    "feces": "./feces/",
+    "test": "./test/"
   },
   "lintErrors": true,
   "typeErrors": true,

@@ -1,6 +1,7 @@
-local types = require("./types")
+local types = require("@feces/types")
 
 local function full(self: types.Feces, group: types.Group?): types.Applyable
+	self:debug("full")
 	local data = {} :: types.Applyable
 	group = group or self
 
@@ -10,6 +11,7 @@ local function full(self: types.Feces, group: types.Group?): types.Applyable
 		end
 		local lookup: types.LookupEntity = (group :: types.Group).lookups[entity]
 		if lookup == nil then
+			self:debug(`X\t{entity} is not in this group: {group.origin}`)
 			return -- we only want the entities that are in this group
 		end
 
@@ -32,6 +34,7 @@ local function full(self: types.Feces, group: types.Group?): types.Applyable
 		local types = archetype.types
 		local record = archetype.types[self.replicated]
 		if not record then
+			self:debug("\terror, record does not exist, full.luau:37")
 			continue
 		end
 
@@ -73,6 +76,7 @@ local function full(self: types.Feces, group: types.Group?): types.Applyable
 
 			local record = records[id]
 			if not record then
+				self:debug("\terror, record does not exist, full.luau:37")
 				continue
 			end
 
@@ -80,7 +84,7 @@ local function full(self: types.Feces, group: types.Group?): types.Applyable
 			local component: types.Component = self.jecs.pair_second(self.world, id :: any) :: any
 			for row, entity in entities do
 				if not (self.world.has :: any)(self.world, entity, component) then
-					continue -- what has my life become
+					continue --          ^^ what has my life become
 				end
 
 				addEntity(

@@ -3,12 +3,12 @@ local test = frktest.test
 local check = frktest.assert.check
 
 return function()
-    local jecs = require("../luau_packages/jecs")
-    local o = require("./observers")
-    local lib = require("../pkgs/core/feces")
+    local jecs = require("@test/jecs_0_8_3")
+    local o = require("@test/observers")
+    local lib = require("@feces/init.luau")
 
     local function create()
-        return lib.new(jecs, o(jecs.World.new())) 
+        return lib.new(jecs, o(jecs.world()), nil, false) 
     end
 
     test.suite("basic", function()
@@ -18,30 +18,32 @@ return function()
 
         test.case("multiple components added", function()
             local feces = create()
+            feces:debug("ENTITY:")
             local E = feces.world:entity()
+            local lookup = feces:lookup(E)
+            check.truthy(lookup == 1)
+            feces:debug("A & B COMPONENTS:")
             local A = feces.world:component()
             local B = feces.world:component()
+            feces:debug("EMPTY DELTA:")
             feces:delta()
             -- check.table.equal(initial, {})
             -- check.table.equal(empty, {})
-            -- print("entity:", E)
-            -- print("component A:", A)
-            -- print("component B:", B)
+            feces:debug("CHANGES:")
             feces.world:set(E, A, 1)
-            -- print("set A to 1")
             feces.world:set(E, B, 2)
-            -- print("set B to 2")
+            feces:debug("ADDED REPLICATED")
             feces.world:add(E, feces.replicated)
-            -- print("added replicated")
 
+            feces:debug("DELTA:")
             local changes, deleted = feces:delta()
-            -- print("changes", changes)
-            -- print("deleted", deleted)
+            -- feces:debug("changes", changes)
+            -- feces:debug("deleted", deleted)
             check.table.equal(changes, {
                 [A] = {
                     ["-1"] = {
                         value = {
-                            [E] = 1
+                            [lookup] = 1
                         },
                         remove = { },
                         none = {},
@@ -50,7 +52,7 @@ return function()
                 [B] = {
                     ["-1"] = {
                         value = {
-                            [E] = 2
+                            [lookup] = 2
                         },
                         remove = { },
                         none = {},
@@ -63,28 +65,37 @@ return function()
 
         test.case("multiple components changed", function()
             local feces = create()
+            feces:debug("ENTITY:")
             local E = feces.world:entity()
+            local lookup = feces:lookup(E)
+            check.truthy(lookup == 1)
+            feces:debug("A & B COMPONENTS:")
             local A = feces.world:component()
             local B = feces.world:component()
 
+            feces:debug("CHANGES:")
             feces.world:set(E, A, 1)
             feces.world:set(E, B, 2)
+            feces:debug("ADDED REPLICATED")
             feces.world:add(E, feces.replicated)
 
             -- call delta the first time to remove the initial state
+            feces:debug("EMPTY DELTA:")
             feces:delta()
-            -- print("initial", initial)
-            -- print("removed", removed)
+            -- feces:debug("initial", initial)
+            -- feces:debug("removed", removed)
 
+            feces:debug("CHANGES:")
             feces.world:set(E, A, 3)
             feces.world:set(E, B, 4)
 
+            feces:debug("DELTA:")
             local changes, deleted = feces:delta()
             check.table.equal(changes, {
                 [A] = {
                     ["-1"] = {
                         value = {
-                            [E] = 3
+                            [lookup] = 3
                         },
                         remove = { },
                         none = {},
@@ -93,7 +104,7 @@ return function()
                 [B] = {
                     ["-1"] = {
                         value = {
-                            [E] = 4
+                            [lookup] = 4
                         },
                         remove = { },
                         none = {},
@@ -106,31 +117,40 @@ return function()
 
         test.case("multiple components removed", function()
             local feces = create()
+            feces:debug("ENTITY:")
             local E = feces.world:entity()
+            local lookup = feces:lookup(E)
+            check.truthy(lookup == 1)
+            feces:debug("A & B COMPONENTS:")
             local A = feces.world:component()
             local B = feces.world:component()
 
+            feces:debug("CHANGES:")
             feces.world:set(E, A, 1)
             feces.world:set(E, B, 2)
+            feces:debug("ADDED REPLICATED")
             feces.world:add(E, feces.replicated)
+            feces:debug("EMPTY DELTA:")
             feces:delta()
 
+            feces:debug("REMOVED COMPONENTS:")
             feces.world:remove(E, A)
             feces.world:remove(E, B)
 
+            feces:debug("DELTA:")
             local changes, deleted = feces:delta()
             check.table.equal(changes, {
                 [A] = {
                     ["-1"] = {
                         value = {},
-                        remove = { E },
+                        remove = { lookup },
                         none = {},
                     }
                 },
                 [B] = {
                     ["-1"] = {
                         value = {},
-                        remove = { E },
+                        remove = { lookup },
                         none = {},
                     }
                 }
@@ -141,64 +161,85 @@ return function()
 
         test.case("entity deleted", function()
             local feces = create()
+            feces:debug("ENTITY:")
             local E = feces.world:entity()
+            local lookup = feces:lookup(E)
+            check.truthy(lookup == 1)
+            feces:debug("A & B COMPONENTS:")
             local A = feces.world:component()
             local B = feces.world:component()
 
+            feces:debug("CHANGES:")
             feces.world:set(E, A, 1)
             feces.world:set(E, B, 2)
+            feces:debug("ADDED REPLICATED")
             feces.world:add(E, feces.replicated)
+            feces:debug("EMPTY DELTA:")
             feces:delta()
 
+            feces:debug("DELETE ENTITY:")
             feces.world:delete(E)
 
+            feces:debug("DELTA:")
             local changes, deleted = feces:delta()
-            print("changes", changes)
-            print("deleted", deleted)
             check.table.equal(changes, {})
             check.table.equal(deleted, {
-                ["-1"] = { E }
+                ["-1"] = { lookup }
             })
             return nil
         end)
 
         test.case("replicated deleted", function()
             local feces = create()
+            feces:debug("ENTITY:")
             local E = feces.world:entity()
+            local lookup = feces:lookup(E)
+            check.truthy(lookup == 1)
+            feces:debug("A & B COMPONENTS:")
             local A = feces.world:component()
             local B = feces.world:component()
 
+            feces:debug("CHANGES:")
             feces.world:set(E, A, 1)
             feces.world:set(E, B, 2)
+            feces:debug("ADDED REPLICATED")
             feces.world:add(E, feces.replicated)
+            feces:debug("EMPTY DELTA:")
             feces:delta()
 
+            feces:debug("REMOVED REPLICATED")
             feces.world:remove(E, feces.replicated)
 
+            feces:debug("DELTA:")
             local changes, deleted = feces:delta()
             check.table.equal(changes, {})
             check.table.equal(deleted, {
-                ["-1"] = { E }
+                ["-1"] = { lookup }
             })
             return nil
         end)
 
         test.case("singleton", function()
             local feces = create()
+            feces:debug("TIMER COMPONENT:")
             local timer = feces.world:component()
+            local lookup = feces:lookup(timer)
+            check.truthy(lookup == 1)
+            feces:debug("SETTING TIMER COMPONENT:")
             feces.world:set(timer, timer, 10)
+            feces:debug("ADDING REPLICATED")
             feces.world:add(timer, feces.replicated)
 
+            feces:debug("DELTA:")
             local changes, deleted = feces:delta()
             check.table.equal(changes, {
                 [timer] = {
                     ["-1"] = {
                         value = {
-                            [timer] = 10
+                            [lookup] = 10
                         },
-                        special = {
-                            -- [timer] = "__n"
-                        }
+                        remove = { },
+                        none = { },
                     }
                 }
             })
@@ -208,32 +249,31 @@ return function()
 
         test.case("full payload", function()
             local feces = create()
+            feces:debug("ENTITY:")
             local E = feces.world:entity()
+            local lookup = feces:lookup(E)
+            check.truthy(lookup == 1)
+            feces:debug("A & B COMPONENTS:")
             local A = feces.world:component()
             local B = feces.world:component()
-            -- print("entity:", E)
-            -- print("component A:", A)
-            -- print("component B:", B)
+            feces:debug("CHANGES:")
             feces.world:set(E, A, 1)
-            -- print("set A to 1")
             feces.world:set(E, B, 2)
-            -- print("set B to 2")
+            feces:debug("ADDED REPLICATED")
             feces.world:add(E, feces.replicated)
-            -- print("added replicated")
-
+            
+            feces:debug("FULL:")
             local k = feces:full()
             check.table.equal(k, {
                 [A] = {
-                    value = {
-                        [E] = 1
+                    [lookup] = {
+                        value = 1,
                     },
-                    special = {}
                 },
                 [B] = {
-                    value = {
-                        [E] = 2
+                    [lookup] = {
+                        value = 2,
                     },
-                    special = {}
                 }
             })
             return nil

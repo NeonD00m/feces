@@ -1,12 +1,13 @@
-local types = require("./types")
+local types = require("@feces/types")
 
 local function addToGroup(self: types.Feces, group: types.Group, entity: types.LocalEntity): types.LookupEntity
 	table.insert(group.refs :: { types.LocalEntity }, entity)
 
 	local index: types.LookupEntity = table.find(group.refs :: { types.LocalEntity }, entity) :: any
 	group.lookups[entity] = index
-	self.world:set(entity, self.grouped, group)
-
+	if group ~= self then
+		self.world:set(entity, self.grouped, group)
+	end
 	if #group.refs >= group.size then
 		warn("[feces] Group is full, consider reserving a larger group size.\n\tA group created at {group.origin} exceeded {group.size}")
 	end
@@ -56,7 +57,7 @@ local function lookup(self: types.Feces, entity: types.LocalEntity?, group: type
 end
 
 local function reserve(size: number): types.Group
-	local scrpt, line, name = debug.info(3, "sln")
+	local scrpt, line, name = debug.info(2, "sln")
 	local origin = `{scrpt}:{line} {name}()`
 	print("[feces] reserving group", origin, size)
     

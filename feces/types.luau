@@ -1,4 +1,4 @@
-local jecs = require("../../luau_packages/jecs")
+local jecs = require("@test/jecs_0_8_3")
 
 export type Jecs = typeof(jecs)
 
@@ -60,7 +60,6 @@ export type Storages = {
 		[LocalEntity]: {
 			action: ChangeType?,
 			value: any?,
-			players: { TestPlayer }
 		}
 	}
 }
@@ -79,12 +78,13 @@ export type Applyable = {
 } & { __d: { LookupEntity } }
 
 export type Lib = {
-	new: (Jecs, World, Group?) -> Feces,
+	new: (Jecs, World, Group?, boolean?) -> Feces,
 	combine: (Changes, Deletes?) -> { [TestPlayer]: Applyable },
 	reserve: (number) -> Group, -- creates a group of entities with a separate lookup 
 }
 
 export type Feces = Lib & Group & {
+	DEBUG: boolean?,
 	jecs: Jecs,
 	world: World,
 	replicated: Component<PlayerObject>,
@@ -98,22 +98,23 @@ export type Feces = Lib & Group & {
 	_deleted: PendingDeletes,
 	_storages: Storages,
 	
+	debug: (self: Feces, ...any) -> (),
 	lookup: (self: Feces, key: LocalEntity?, group: Group?) -> LookupEntity,
 	ref: (self: Feces, key: LookupEntity?, group: Group?) -> LocalEntity,
 
-	apply: (self: Feces, delta: Applyable, group: Group?) -> nil,
+	apply: (self: Feces, delta: Applyable, group: Group?) -> (),
 	delta: (self: Feces, group: Group?) -> (Changes, Deletes),
 	full: (self: Feces, group: Group?) -> Applyable,
 
-	added: (self: Feces, (LocalEntity) -> nil) -> nil,
-	changed: (self: Feces, (LocalEntity, Component, any) -> nil) -> nil,
-	removed: (self: Feces, (LocalEntity, Component) -> nil) -> nil,
-	deleted: (self: Feces, (LocalEntity) -> nil) -> nil,
+	added: (self: Feces, (LocalEntity) -> nil) -> (),
+	changed: (self: Feces, (LocalEntity, Component, any) -> ()) -> (),
+	removed: (self: Feces, (LocalEntity, Component) -> ()) -> (),
+	deleted: (self: Feces, (LocalEntity) -> nil) -> (),
 	_hooks: {
-		added: ((LocalEntity) -> nil)?,
-		changed: ((LocalEntity, Component, any) -> nil)?,
-		removed: ((LocalEntity, Component) -> nil)?,
-		deleted: ((LocalEntity) -> nil)?,
+		added: ((LocalEntity) -> ())?,
+		changed: ((LocalEntity, Component, any) -> ())?,
+		removed: ((LocalEntity, Component) -> ())?,
+		deleted: ((LocalEntity) -> ())?,
 	},
 }
 

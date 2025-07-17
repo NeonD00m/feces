@@ -10,6 +10,7 @@ function load_tests()
     -- tests execute in the order they are loaded
     require("./basic")()
     require("./advanced")()
+    require("./groups")()
 end
 
 function run_tests()
