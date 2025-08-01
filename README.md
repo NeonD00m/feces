@@ -10,7 +10,7 @@ A generalized replication system for [jecs](https://github.com/ukendio/jecs) tha
 
 <br>
 
-### Examples
+### Basics
 
 ```luau
 local entity = world:entity()

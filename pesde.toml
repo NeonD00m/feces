@@ -1,14 +1,21 @@
-name = "killergg/feces_suite"
-version = "0.1.0"
-description = "A standard library for jecs"
+name = "killergg/feces"
+version = "1.2.0-rc.2"
+description = "Fast Entity Component Export System: Generalized Replication for jecs."
 authors = ["NeonD00m", "as8d"]
-repository = "https://github.com/NeonD00m/jecs_std"
+repository = "https://github.com/neond00m/feces"
 license = "MIT"
 
-workspace_members = ["pkgs/*"]
+includes = [
+  "pesde.toml",
+  "README.md",
+  "LICENSE",
+  "feces/**",
+]
 
 [target]
 environment = "roblox"
+lib = "feces/init.luau"
+build_files = ["feces"]
 
 [indices]
 default = "https://github.com/pesde-pkg/index"
@@ -22,8 +29,8 @@ sourcemap_generator = ".pesde/scripts/sourcemap_generator.luau"
 
 [dev_dependencies]
 scripts = { name = "pesde/scripts_rojo", version = "^0.1.0", target = "lune" }
-rojo = { name = "pesde/rojo", version = "^7.4.4", target = "lune" }
+rojo = { name = "pesde/rojo", version = "^7.5.1", target = "lune" }
 frktest = { name = "itsfrank/frktest", version = "^0.0.2", target = "lune" }
 
-# [dependencies]
-# jecs = { wally = "ukendio/jecs", version = "^0.8.1", target = "luau" }
+[dependencies]
+jecs = { name = "marked/jecs", version = "^0.9.0-rc.7", target = "roblox" }

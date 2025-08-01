@@ -11,7 +11,7 @@ local function full(self: types.Feces, group: types.Group?): types.Applyable
 		end
 		local lookup: types.LookupEntity = (group :: types.Group).lookups[entity]
 		if lookup == nil then
-			self:debug(`X\t{entity} is not in this group: {group.origin}`)
+			self:debug(`X\t{entity} is not in this group: {(group :: types.Group).origin}`)
 			return -- we only want the entities that are in this group
 		end
 

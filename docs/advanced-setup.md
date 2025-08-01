@@ -2,7 +2,8 @@
 sidebar_position: 3
 ---
 # Advanced Setup
-This example will use [Blink](https://1axen.github.io/blink) but the same concepts can likely be applied to any other compiled networking library.
+This example will use [Blink](https://1axen.github.io/blink) to show how you could optimize packet size.
+The same concepts can likely be applied to any other serialized networking library.
 
 
 In our blink file events like requestFullPacket and entityDeleted are 
@@ -14,6 +15,7 @@ event requestFullPacket {
 	call: SingleAsync
 }
 
+type Entity = u16
 event entityDeleted {
 	from: Server,
 	type: Reliable,
@@ -21,7 +23,6 @@ event entityDeleted {
 	data: u16[]
 }
 
-type Entity = u16
 map EntityMap<T> = { [Entity]: T }
 enum SpecialChange = { __n, __d }
 struct ComponentPacket<T> {

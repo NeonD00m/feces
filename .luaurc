@@ -5,7 +5,8 @@
     "lune": "~/.lune/.typedefs/0.8.3/",
     "pkg": "./lune_packages/",
     "feces": "./feces/",
-    "test": "./test/"
+    "test": "./test/",
+    "rbx": "./roblox_packages/"
   },
   "lintErrors": true,
   "typeErrors": true,

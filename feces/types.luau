@@ -1,4 +1,4 @@
-local jecs = require("@test/jecs_0_8_3")
+local jecs = require("@rbx/jecs")
 
 export type Jecs = typeof(jecs)
 
@@ -45,10 +45,6 @@ export type Changes = {
 			none: { LookupEntity }
 		}
 	}
-}
-
-export type NoneComponents = {
-	[Component]: { LookupEntity }
 }
 
 export type PendingDeletes = {

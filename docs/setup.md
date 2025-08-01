@@ -11,12 +11,12 @@ This option reduces code written and tools needed. In most cases, developers don
 ```lua
 if RunService:IsServer() then
 	requestFullPacket.OnServerEvent:Connect(function(player)
-		remote:FireClient(player, full())
+		remote:FireClient(player, feces.full())
 	end)
 else
 	requestFullpacket:FireServer()
 	remote.OnClientEvent:Connect(function(data)
-		apply(data)
+		feces.apply(data)
 	end)
 end
 
@@ -26,7 +26,7 @@ local function replicate()
 		return
 	end
 
-	for player, packet in group(changes, deleted) do
+	for player, packet in feces.combine(changes, deleted) do
 		remote:FireClient(player, packet)
 	end
 end

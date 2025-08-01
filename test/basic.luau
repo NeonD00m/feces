@@ -3,8 +3,7 @@ local test = frktest.test
 local check = frktest.assert.check
 
 return function()
-    local jecs = require("@test/jecs_0_8_3")
-    -- local o = require("@test/observers")
+    local jecs = require("@rbx/jecs")
     local lib = require("@feces/init.luau")
 
     local function create()

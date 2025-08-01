@@ -36,7 +36,7 @@ type changes = {
 		[Player]: {
 			value: { [Entity]: any },
 			remove: { [Entity]: deleteValue },
-			nil: { [Entity]: nilValue },
+			none: { [Entity]: nilValue },
 		},
 	},
 }
@@ -57,17 +57,17 @@ type applyable = {
 	[Component]: {
 		value: { [LookupEntity]: any },
 		remove: { [LookupEntity]: deleteValue },
-		nil: { [LookupEntity]: deleteValue },
+		none: { [LookupEntity]: deleteValue },
 	},
 } & { __d: { LookupEntity } }
 
-export type lib<jecs> = {
-	new: (typeof(jecs.World)) -> feces,
+export type lib = {
+	new: (any) -> feces,
 	combine: (changes, deletes?) -> { [Player]: applyable },
 	reserve: (size: number) -> group, -- creates a group of entities with a separate lookup 
 }
 
-export type feces<jecs> = lib<jecs> & group & {
+export type feces = lib & group & {
 	replicated: jecs.Component<PlayerObject>,
 	grouped: jecs.Component<group>,
 	queries: {
