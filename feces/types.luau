@@ -88,7 +88,6 @@ export type Feces = Lib & Group & {
 	jecs: Jecs,
 	world: World,
 	replicated: Component<PlayerObject>,
-	grouped: Component<Group>,
 
 	queries: {
 		single: jecs.Query<Component<PlayerObject>>,
@@ -97,6 +96,7 @@ export type Feces = Lib & Group & {
 
 	_deleted: PendingDeletes,
 	_storages: Storages,
+	_grouped: { [LocalEntity]: Group },
 	
 	debug: (self: Feces, ...any) -> (),
 	lookup: (self: Feces, key: LocalEntity?, group: Group?) -> LookupEntity,

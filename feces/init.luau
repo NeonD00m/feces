@@ -1,17 +1,15 @@
-local Players = game and game:GetService("Players")
-
 local types = require("@feces/types")
 local groups = require("@feces/groups")
+local hooks = require("@feces/hooks")
 
 local apply = require("@feces/apply")
 local full = require("@feces/full")
 local delta = require("@feces/delta")
 local combine = require("@feces/combine")
 local resolvePlayers = require("@feces/resolvePlayers")
-local hooks = require("@feces/hooks")
 
 local added, changed, removed, deleted = hooks.added, hooks.changed, hooks.removed, hooks.deleted
-local ref, lookup, reserve, addToGroup, removeFromGroup = groups.ref, groups.lookup, groups.reserve, groups.addToGroup, groups.removeFromGroup
+local ref, lookup, reserve, setGroup, getGroup = groups.ref, groups.lookup, groups.reserve, groups.setGroup, groups.getGroup
 
 local function debug(self: types.Feces, ...: any)
     if not self.DEBUG then
@@ -26,8 +24,8 @@ local lib = {
     combine = combine,
     new = function(jecs: types.Jecs, world: types.World, group: types.Group?, debugPrints: boolean?): types.Feces
         --assume the user has already added observers to the world
-        local replicated: types.Component<types.PlayerObject> = world:component() :: any
-        local grouped: types.Component<types.Group> = world:component() :: any
+        local replicated = world:component() :: any
+        local grouped = world:component() :: any
         world:set(replicated, jecs.Name, "replicated")
         world:set(grouped, jecs.Name, "grouped")
 
@@ -37,7 +35,6 @@ local lib = {
             jecs = jecs,
             world = world,
             replicated = replicated,
-            grouped = grouped,
             DEBUG = debugPrints,
 
             queries = {
@@ -46,6 +43,7 @@ local lib = {
             },
             _deleted = {},
             _storages = storages,
+            _grouped = {},
 
             origin = if group then group.origin else "feces.new()",
             size = if group then group.size else math.huge,
@@ -60,6 +58,8 @@ local lib = {
             full = full,
             reserve = reserve,
             combine = combine,
+            setGroup = setGroup,
+            getGroup = getGroup,
 
             added = added,
             changed = changed,
@@ -108,14 +108,14 @@ local lib = {
             end)
         end
 
-        for component in world.component_index :: {number} do
+        for component in world.component_index :: {any} do
             if component > 256 and component <= 271 then
                 continue
             end
             if component == replicated or component == grouped then
                 continue
             end
-            if (component :: any) ~= replicated and not (jecs.IS_PAIR(component) and jecs.pair_first(world, component) == replicated) then
+            if (component :: any) ~= replicated and not (jecs.IS_PAIR(component :: any) and jecs.pair_first(world, component :: any) == replicated) then
                 listen(component :: any)
             end
         end
@@ -133,7 +133,7 @@ local lib = {
             end,
         })
 
-		world:removed(replicated, function(ent)
+		world:removed(replicated, function(ent: any)
             local filter = world:get(ent, replicated)
             for _, player in resolvePlayers(filter) do
                 feces._deleted[player] = feces._deleted[player] or {}
@@ -141,25 +141,32 @@ local lib = {
             end
         end)
 
-        world:added(grouped, function(ent: any, _, val: any)
-            feces:debug(`->\tgroup added: {ent}[grouped] = {val.origin}`)
-            -- addToGroup(feces, ent, val)
-        end)
+        -- world:added(grouped, function(ent: any, _, val: types.Group)
+        --     if feces.lookups[ent] then
+        --         feces:debug(`->\tremoving from feces: {ent}`)
+        --         removeFromGroup(feces, ent)
+        --     end
+        --     if val then
+        --         feces:debug(`->\tgroup added: {ent}[grouped] = {val.origin}`)
+        --         addToGroup(feces, val, ent)
+        --     else
+        --         feces:debug("->\tgroup was nil when added:", val)
+        --     end
+        -- end)
 
-        world:changed(grouped, function(ent: any, _, val: any)
-            local prev = world:get(ent, grouped)
-            feces:debug(`->\tgroup changed: {ent}[grouped] = ({prev and prev.origin}) -> ({val.origin})`)
-            -- removeFromGroup(feces, ent, prev)
-            if val then
-            -- addToGroup(feces, ent, val)
-            end
-        end)
+        -- world:changed(grouped, function(ent: any, _, val: types.Group)
+        --     local prev = removeFromGroup(feces, ent)
+        --     feces:debug("->\tgroup was nil when changed:", val)
+        --     if val and not val.lookups[ent] then
+        --         feces:debug(`->\tgroup changed: {ent}[grouped] = ({prev and prev.origin}) -> ({val.origin})`)
+        --         addToGroup(feces, val, ent)
+        --     end
+        -- end)
 
-        world:removed(grouped, function(ent: any, _)
-            local prev = world:get(ent, grouped)
-            feces:debug(`->\tgroup removed: {ent}[grouped] = ({prev and prev.origin}) deleted`)
-            -- removeFromGroup(feces, ent, world:get)
-        end)
+        -- world:removed(grouped, function(ent: any, _)
+        --     local prev = removeFromGroup(feces, ent)
+        --     feces:debug(`->\tgroup removed: {ent}[grouped] = ({prev and prev.origin}) deleted`)
+        -- end)
         
         return feces :: types.Feces
     end

@@ -68,8 +68,9 @@ local function delta(self: types.Feces, group: types.Group?): (types.Changes, ty
 
             -- self:debug("filling change:", ent, comp, data.value, data.action)
             fill(changes, comp, lookup, data.value, data.action, players)
+            storage[entity] = nil
         end
-        table.clear(storage)
+        -- table.clear(storage) -- can't do this any more since groups don't have storages
     end
 
     self:debug("delta deleted")

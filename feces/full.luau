@@ -39,7 +39,7 @@ local function full(self: types.Feces, group: types.Group?): types.Applyable
 		end
 
 
-		local playerColumn = columns[record]
+		local playerColumn = columns[record :: any]
 		for key, id in types do
 			if id == self.replicated then
 				continue
@@ -57,7 +57,7 @@ local function full(self: types.Feces, group: types.Group?): types.Applyable
 	end
 
 	for _, archetype in self.queries.pair:archetypes() do
-		local entities: { number } = archetype.entities
+		local entities: { number } = archetype.entities :: any
 		if #entities == 0 then
 			continue
 		end
@@ -74,13 +74,13 @@ local function full(self: types.Feces, group: types.Group?): types.Applyable
 				continue -- it's a pair but the first component isn't replicated e.g pair(someComponent, someOtherComponent) instead of pair(replicated, someOtherComponent)
 			end
 
-			local record = records[id]
+			local record = records[id :: any]
 			if not record then
 				self:debug("\terror, record does not exist, full.luau:37")
 				continue
 			end
 
-			local playerColumn = archetype.columns[record]
+			local playerColumn = archetype.columns[record :: any]
 			local component: types.Component = self.jecs.pair_second(self.world, id :: any) :: any
 			for row, entity in entities do
 				if not (self.world.has :: any)(self.world, entity, component) then
