@@ -1,0 +1,292 @@
+<!doctype html>
+<html lang="en" dir="ltr" class="plugin-moonwave plugin-id-moonwave" data-has-hydrated="false">
+<head>
+<meta charset="UTF-8">
+<meta name="generator" content="Docusaurus v3.7.0">
+<title data-rh="true">lib | feces</title><meta data-rh="true" name="viewport" content="width=device-width,initial-scale=1"><meta data-rh="true" name="twitter:card" content="summary_large_image"><meta data-rh="true" property="og:url" content="https://neond00m.github.io/feces/api/lib"><meta data-rh="true" property="og:locale" content="en"><meta data-rh="true" name="docusaurus_locale" content="en"><meta data-rh="true" name="docusaurus_tag" content="default"><meta data-rh="true" name="docsearch:language" content="en"><meta data-rh="true" name="docsearch:docusaurus_tag" content="default"><meta data-rh="true" property="og:title" content="lib | feces"><meta data-rh="true" name="description" content="The feces library only provides 3 functions
+- [`new`](#new) -- creates new feces class
+- [`combine`](#combine) -- combines `Changes` and `Deletes` objects into one [`Applyable`](api/feces#Applyable) per player
+- [`reserve`](#reserve) -- creates a `Group` structure that can be used by any feces object
+
+Also, [`combine`](#combine) and [`reserve`](#reserve) can both be used from an instance of [`feces`](/api/feces)
+via `feces.combine` and `feces.reserve` respectively (using . operator instead of :)"><meta data-rh="true" property="og:description" content="The feces library only provides 3 functions
+- [`new`](#new) -- creates new feces class
+- [`combine`](#combine) -- combines `Changes` and `Deletes` objects into one [`Applyable`](api/feces#Applyable) per player
+- [`reserve`](#reserve) -- creates a `Group` structure that can be used by any feces object
+
+Also, [`combine`](#combine) and [`reserve`](#reserve) can both be used from an instance of [`feces`](/api/feces)
+via `feces.combine` and `feces.reserve` respectively (using . operator instead of :)"><link data-rh="true" rel="icon" href="/feces/images/thelogo.png"><link data-rh="true" rel="canonical" href="https://neond00m.github.io/feces/api/lib"><link data-rh="true" rel="alternate" href="https://neond00m.github.io/feces/api/lib" hreflang="en"><link data-rh="true" rel="alternate" href="https://neond00m.github.io/feces/api/lib" hreflang="x-default"><link rel="stylesheet" href="/feces/assets/css/styles.8f7b364b.css">
+<script src="/feces/assets/js/runtime~main.5ef7c471.js" defer="defer"></script>
+<script src="/feces/assets/js/main.8a8677d1.js" defer="defer"></script>
+</head>
+<body class="navigation-with-keyboard">
+<script>!function(){function t(t){document.documentElement.setAttribute("data-theme",t)}var e=function(){try{return new URLSearchParams(window.location.search).get("docusaurus-theme")}catch(t){}}()||function(){try{return window.localStorage.getItem("theme")}catch(t){}}();null!==e?t(e):window.matchMedia("(prefers-color-scheme: dark)").matches?t("dark"):(window.matchMedia("(prefers-color-scheme: light)").matches,t("light"))}(),function(){try{const c=new URLSearchParams(window.location.search).entries();for(var[t,e]of c)if(t.startsWith("docusaurus-data-")){var a=t.replace("docusaurus-data-","data-");document.documentElement.setAttribute(a,e)}}catch(t){}}()</script><div id="__docusaurus"><div role="region" aria-label="Skip to main content"><a class="skipToContent_fXgn" href="#__docusaurus_skipToContent_fallback">Skip to main content</a></div><nav aria-label="Main" class="navbar navbar--fixed-top"><div class="navbar__inner"><div class="navbar__items"><button aria-label="Toggle navigation bar" aria-expanded="false" class="navbar__toggle clean-btn" type="button"><svg width="30" height="30" viewBox="0 0 30 30" aria-hidden="true"><path stroke="currentColor" stroke-linecap="round" stroke-miterlimit="10" stroke-width="2" d="M4 7h22M4 15h22M4 23h22"></path></svg></button><a class="navbar__brand" href="/feces/"><div class="navbar__logo"><img src="https://raw.githubusercontent.com/NeonD00m/feces/refs/heads/main/images/thelogo.png" alt="feces" class="themedComponent_mlkZ themedComponent--light_NVdE"><img src="https://raw.githubusercontent.com/NeonD00m/feces/refs/heads/main/images/thelogo.png" alt="feces" class="themedComponent_mlkZ themedComponent--dark_xIcU"></div><b class="navbar__title text--truncate"></b></a><a class="navbar__item navbar__link" href="/feces/docs/intro">Docs</a><a aria-current="page" class="navbar__item navbar__link navbar__link--active" href="/feces/api/">API</a></div><div class="navbar__items navbar__items--right"><a href="https://github.com/NeonD00m/feces" target="_blank" rel="noopener noreferrer" class="navbar__item navbar__link">GitHub<svg width="13.5" height="13.5" aria-hidden="true" viewBox="0 0 24 24" class="iconExternalLink_nPIU"><path fill="currentColor" d="M21 13v10h-21v-19h12v2h-10v15h17v-8h2zm3-12h-10.988l4.035 4-6.977 7.07 2.828 2.828 6.977-7.07 4.125 4.172v-11z"></path></svg></a><div class="toggle_vylO colorModeToggle_DEke"><button class="clean-btn toggleButton_gllP toggleButtonDisabled_aARS" type="button" disabled="" title="Switch between dark and light mode (currently light mode)" aria-label="Switch between dark and light mode (currently light mode)" aria-live="polite" aria-pressed="false"><svg viewBox="0 0 24 24" width="24" height="24" class="lightToggleIcon_pyhR"><path fill="currentColor" d="M12,9c1.65,0,3,1.35,3,3s-1.35,3-3,3s-3-1.35-3-3S10.35,9,12,9 M12,7c-2.76,0-5,2.24-5,5s2.24,5,5,5s5-2.24,5-5 S14.76,7,12,7L12,7z M2,13l2,0c0.55,0,1-0.45,1-1s-0.45-1-1-1l-2,0c-0.55,0-1,0.45-1,1S1.45,13,2,13z M20,13l2,0c0.55,0,1-0.45,1-1 s-0.45-1-1-1l-2,0c-0.55,0-1,0.45-1,1S19.45,13,20,13z M11,2v2c0,0.55,0.45,1,1,1s1-0.45,1-1V2c0-0.55-0.45-1-1-1S11,1.45,11,2z M11,20v2c0,0.55,0.45,1,1,1s1-0.45,1-1v-2c0-0.55-0.45-1-1-1C11.45,19,11,19.45,11,20z M5.99,4.58c-0.39-0.39-1.03-0.39-1.41,0 c-0.39,0.39-0.39,1.03,0,1.41l1.06,1.06c0.39,0.39,1.03,0.39,1.41,0s0.39-1.03,0-1.41L5.99,4.58z M18.36,16.95 c-0.39-0.39-1.03-0.39-1.41,0c-0.39,0.39-0.39,1.03,0,1.41l1.06,1.06c0.39,0.39,1.03,0.39,1.41,0c0.39-0.39,0.39-1.03,0-1.41 L18.36,16.95z M19.42,5.99c0.39-0.39,0.39-1.03,0-1.41c-0.39-0.39-1.03-0.39-1.41,0l-1.06,1.06c-0.39,0.39-0.39,1.03,0,1.41 s1.03,0.39,1.41,0L19.42,5.99z M7.05,18.36c0.39-0.39,0.39-1.03,0-1.41c-0.39-0.39-1.03-0.39-1.41,0l-1.06,1.06 c-0.39,0.39-0.39,1.03,0,1.41s1.03,0.39,1.41,0L7.05,18.36z"></path></svg><svg viewBox="0 0 24 24" width="24" height="24" class="darkToggleIcon_wfgR"><path fill="currentColor" d="M9.37,5.51C9.19,6.15,9.1,6.82,9.1,7.5c0,4.08,3.32,7.4,7.4,7.4c0.68,0,1.35-0.09,1.99-0.27C17.45,17.19,14.93,19,12,19 c-3.86,0-7-3.14-7-7C5,9.07,6.81,6.55,9.37,5.51z M12,3c-4.97,0-9,4.03-9,9s4.03,9,9,9s9-4.03,9-9c0-0.46-0.04-0.92-0.1-1.36 c-0.98,1.37-2.58,2.26-4.4,2.26c-2.98,0-5.4-2.42-5.4-5.4c0-1.81,0.89-3.42,2.26-4.4C12.92,3.04,12.46,3,12,3L12,3z"></path></svg></button></div><div class="navbarSearchContainer_Bca1"><div class="navbar__search"><span aria-label="expand searchbar" role="button" class="search-icon" tabindex="0"></span><input id="search_input_react" type="search" placeholder="Loading..." aria-label="Search" class="navbar__search-input search-bar" disabled=""></div></div></div></div><div role="presentation" class="navbar-sidebar__backdrop"></div></nav><div id="__docusaurus_skipToContent_fallback" class="main-wrapper mainWrapper_z2l0 docPageContainer_wNNk"><div class="docPage_Dpn1"><div class="docSidebarContainer_o_re"><div class="sidebar_njMd"><nav aria-label="Docs sidebar" class="menu thin-scrollbar menu_SIkG"><ul class="theme-doc-sidebar-menu menu__list"><li class="theme-doc-sidebar-item-link theme-doc-sidebar-item-link-level-1 menu__list-item"><a class="menu__link" href="/feces/api/feces">feces</a></li><li class="theme-doc-sidebar-item-link theme-doc-sidebar-item-link-level-1 menu__list-item"><a class="menu__link menu__link--active" aria-current="page" href="/feces/api/lib">lib</a></li></ul></nav></div></div><main class="docMainContainer_HJE1"><div class="container padding-vert--lg"><div class="row"><div class="col docItemCol_MU3C"><div class="docItemContainer_Wv98"><article><div class="member_J0w1 markdown"><div class="tocCollapsible_ETCw theme-doc-toc-mobile tocMobile_oUs_"><button type="button" class="clean-btn tocCollapsibleButton_TO0P">On this page</button></div><header><h1 class="docTitle_mZRt" style="text-decoration:none"><span style="display:inline-block">lib</span></h1><div class="luaClassTags_EipM"></div><div>
+<p>The feces library only provides 3 functions</p>
+<ul>
+  <li><a href="#new"><code>new</code></a> -- creates new feces class</li>
+  <li><a href="#combine"><code>combine</code></a> -- combines <code>Changes</code> and <code>Deletes</code> objects into one <a href="api/feces#Applyable"><code>Applyable</code></a> per player</li>
+  <li><a href="#reserve"><code>reserve</code></a> -- creates a <code>Group</code> structure that can be used by any feces object</li>
+</ul>
+<p>
+  Also, <a href="#combine"><code>combine</code></a> and <a href="#reserve"><code>reserve</code></a> can both be used from an instance of <a href="/feces/api/feces"><code>feces</code></a>
+  via <code>feces.combine</code> and <code>feces.reserve</code> respectively (using . operator instead of :)
+</p>
+</div></header><h2 class="anchor anchorWithStickyNavbar_LWe7" id="types">Types<a href="#types" class="hash-link" aria-label="Direct link to Types" title="Direct link to Types">​</a></h2><div class="divider_rE5g"></div><h3 class="anchor anchorWithStickyNavbar_LWe7" id="Group"><code style="text-decoration:none">Group</code><a href="#Group" class="hash-link" aria-label="Direct link to Group" title="Direct link to Group">​</a></h3><div class="repositoryDetailsContainer_BPdw"><a class="sourceButton_sEho" href="https://github.com/NeonD00m/feces/blob/main/src/api.luau#L72"><div class="sourceButtonText_Vh0m">&lt;/&gt;</div></a></div><div class="memberString_GwaU"><code class="purple_ieR2">interface</code> <code>Group<!-- --> <!-- -->{</code><div class="inset_uKQm"><div><code>origin<!-- -->: </code><code class="blue_P4bS">string</code><span class="inlineDescription_G7Er">-- <span>
+<p>Human-readable origin for warnings and debugging (e.g. "script:23 reserve()")</p>
+</span></span></div><div><code>size<!-- -->: </code><code class="blue_P4bS">number</code><span class="inlineDescription_G7Er">-- <span>
+<p>Maximum count of entities for this group</p>
+</span></span></div><div><code>lookups<!-- -->: </code><code class="purple_ieR2">{</code><span><code>[</code><code class="blue_P4bS"><a style="text-decoration:underline;color:inherit" href="/feces/api/lib#LocalEntity">LocalEntity</a></code><code>]</code></span><code>: </code><code class="blue_P4bS"><a style="text-decoration:underline;color:inherit" href="/feces/api/lib#LookupEntity">LookupEntity</a></code><code class="purple_ieR2">}</code><span class="inlineDescription_G7Er">-- <span>
+<p>Mapping local entity -> lookup id</p>
+</span></span></div><div><code>refs<!-- -->: </code><code class="purple_ieR2">{</code><span><code>[</code><code class="blue_P4bS"><a style="text-decoration:underline;color:inherit" href="/feces/api/lib#LookupEntity">LookupEntity</a></code><code>]</code></span><code>: </code><code class="blue_P4bS"><a style="text-decoration:underline;color:inherit" href="/feces/api/lib#LocalEntity">LocalEntity</a></code><code class="purple_ieR2">}</code><span class="inlineDescription_G7Er">-- <span>
+<p>Mapping lookup id -> local entity</p>
+</span></span></div></div><code>}</code></div><div>
+<p>
+  An object representing a reserved or default lookup namespace. The <code>feces</code> instance itself behaves as a <code>Group</code>
+  when used as the default/global group.
+</p>
+</div><div class="divider_rE5g"></div><h3 class="anchor anchorWithStickyNavbar_LWe7" id="Applyable"><code style="text-decoration:none">Applyable</code><a href="#Applyable" class="hash-link" aria-label="Direct link to Applyable" title="Direct link to Applyable">​</a></h3><div class="repositoryDetailsContainer_BPdw"><a class="sourceButton_sEho" href="https://github.com/NeonD00m/feces/blob/main/src/api.luau#L79"><div class="sourceButtonText_Vh0m">&lt;/&gt;</div></a></div><div class="memberString_GwaU"><code class="purple_ieR2">type</code> <code>Applyable<!-- --> = </code> <code class="purple_ieR2">{</code><div class="inset_uKQm"><span><code>[</code><code class="blue_P4bS">Component</code><code>]</code></span><code>: </code><code class="green_DgR4">{</code><span><code>[</code><code class="blue_P4bS"><a style="text-decoration:underline;color:inherit" href="/feces/api/lib#LookupEntity">LookupEntity</a></code><code>]</code></span><code>: </code><code class="yellow_QJap">{</code><div class="inset_uKQm"><code>value<!-- -->: </code><code class="blue_P4bS">any</code><code class="yellow_QJap">,</code></div><div class="inset_uKQm"><code>action?<!-- -->: </code><code class="blue_P4bS">number</code><code class="yellow_QJap">,</code></div><div class="inset_uKQm"></div><code class="yellow_QJap">}</code><code class="green_DgR4">}</code><code class="purple_ieR2">,</code></div><div class="inset_uKQm"><code class="blue_P4bS">__d</code><code class="blue_P4bS">=</code><code class="green_DgR4">{</code><code class="blue_P4bS"><a style="text-decoration:underline;color:inherit" href="/feces/api/lib#LookupEntity">LookupEntity</a></code><code class="green_DgR4">}</code></div><code class="purple_ieR2">}</code></div><div>
+<p>
+  Represents a per-player packet that can be applied locally.
+  Use <a href="#apply"><code>feces:apply</code></a> to enact the changes in <code>Applyable</code> into the <a href="#world"><code>feces.world</code></a>.
+</p>
+</div><div class="divider_rE5g"></div><h3 class="anchor anchorWithStickyNavbar_LWe7" id="Changes"><code style="text-decoration:none">Changes</code><a href="#Changes" class="hash-link" aria-label="Direct link to Changes" title="Direct link to Changes">​</a></h3><div class="repositoryDetailsContainer_BPdw"><a class="sourceButton_sEho" href="https://github.com/NeonD00m/feces/blob/main/src/api.luau#L85"><div class="sourceButtonText_Vh0m">&lt;/&gt;</div></a></div><div class="memberString_GwaU"><code class="purple_ieR2">type</code> <code>Changes<!-- --> = </code> <code class="purple_ieR2">{</code><span><code>[</code><code class="blue_P4bS">Component</code><code>]</code></span><code>: </code><code class="green_DgR4">{</code><span><code>[</code><code class="blue_P4bS"><a style="text-decoration:underline;color:inherit" href="https://developer.roblox.com/en-us/api-reference/class/Player" target="_blank" rel="noopener noreferrer">Player<svg xmlns="http://www.w3.org/2000/svg" aria-hidden="true" x="0px" y="0px" viewBox="0 0 100 100" width="15" height="15" class="icon outbound" style="color:gray;vertical-align:middle;margin-left:2px"><path fill="currentColor" d="M18.8,85.1h56l0,0c2.2,0,4-1.8,4-4v-32h-8v28h-48v-48h28v-8h-32l0,0c-2.2,0-4,1.8-4,4v56C14.8,83.3,16.6,85.1,18.8,85.1z"></path> <polygon fill="currentColor" points="45.7,48.7 51.3,54.3 77.2,28.5 77.2,37.2 85.2,37.2 85.2,14.9 62.8,14.9 62.8,22.9 71.5,22.9"></polygon></svg></a></code><code>]</code></span><code>: </code><code class="yellow_QJap">{</code><div class="inset_uKQm"><code>value<!-- -->: </code><code class="cyan_dehK">{</code><span><code>[</code><code class="blue_P4bS"><a style="text-decoration:underline;color:inherit" href="/feces/api/lib#LookupEntity">LookupEntity</a></code><code>]</code></span><code>: </code><code class="blue_P4bS">any</code><code class="cyan_dehK">}</code><code class="yellow_QJap">,</code></div><div class="inset_uKQm"><code>remove<!-- -->: </code><code class="cyan_dehK">{</code><code class="blue_P4bS"><a style="text-decoration:underline;color:inherit" href="/feces/api/lib#LookupEntity">LookupEntity</a></code><code class="cyan_dehK">}</code><code class="yellow_QJap">,</code></div><div class="inset_uKQm"><code>none<!-- -->: </code><code class="cyan_dehK">{</code><code class="blue_P4bS"><a style="text-decoration:underline;color:inherit" href="/feces/api/lib#LookupEntity">LookupEntity</a></code><code class="cyan_dehK">}</code><code class="yellow_QJap">,</code></div><div class="inset_uKQm"></div><code class="yellow_QJap">}</code><code class="green_DgR4">}</code><code class="purple_ieR2">}</code></div><div>
+<p>Produced by <a href="#delta"><code>feces:delta</code></a> and accepted by <a href="#combine"><code>feces.combine</code></a>.</p>
+</div><div class="divider_rE5g"></div><h3 class="anchor anchorWithStickyNavbar_LWe7" id="Deletes"><code style="text-decoration:none">Deletes</code><a href="#Deletes" class="hash-link" aria-label="Direct link to Deletes" title="Direct link to Deletes">​</a></h3><div class="repositoryDetailsContainer_BPdw"><a class="sourceButton_sEho" href="https://github.com/NeonD00m/feces/blob/main/src/api.luau#L91"><div class="sourceButtonText_Vh0m">&lt;/&gt;</div></a></div><div class="memberString_GwaU"><code class="purple_ieR2">type</code> <code>Deletes<!-- --> = </code> <code class="purple_ieR2">{</code><span><code>[</code><code class="blue_P4bS"><a style="text-decoration:underline;color:inherit" href="https://developer.roblox.com/en-us/api-reference/class/Player" target="_blank" rel="noopener noreferrer">Player<svg xmlns="http://www.w3.org/2000/svg" aria-hidden="true" x="0px" y="0px" viewBox="0 0 100 100" width="15" height="15" class="icon outbound" style="color:gray;vertical-align:middle;margin-left:2px"><path fill="currentColor" d="M18.8,85.1h56l0,0c2.2,0,4-1.8,4-4v-32h-8v28h-48v-48h28v-8h-32l0,0c-2.2,0-4,1.8-4,4v56C14.8,83.3,16.6,85.1,18.8,85.1z"></path> <polygon fill="currentColor" points="45.7,48.7 51.3,54.3 77.2,28.5 77.2,37.2 85.2,37.2 85.2,14.9 62.8,14.9 62.8,22.9 71.5,22.9"></polygon></svg></a></code><code>]</code></span><code>: </code><code class="green_DgR4">{</code><code class="blue_P4bS"><a style="text-decoration:underline;color:inherit" href="/feces/api/lib#LookupEntity">LookupEntity</a></code><code class="green_DgR4">}</code><code class="purple_ieR2">}</code></div><div>
+<p>Produced by <a href="#delta"><code>feces:delta</code></a></p>
+</div><div class="divider_rE5g"></div><h3 class="anchor anchorWithStickyNavbar_LWe7" id="LocalEntity"><code style="text-decoration:none">LocalEntity</code><a href="#LocalEntity" class="hash-link" aria-label="Direct link to LocalEntity" title="Direct link to LocalEntity">​</a></h3><div class="repositoryDetailsContainer_BPdw"><a class="sourceButton_sEho" href="https://github.com/NeonD00m/feces/blob/main/src/api.luau#L97"><div class="sourceButtonText_Vh0m">&lt;/&gt;</div></a></div><div class="memberString_GwaU"><code class="purple_ieR2">type</code> <code>LocalEntity<!-- --> = </code> <code class="blue_P4bS">number</code></div><div>
+<p>An entity in the world at <a href="#world"><code>feces.world</code></a></p>
+</div><div class="divider_rE5g"></div><h3 class="anchor anchorWithStickyNavbar_LWe7" id="LookupEntity"><code style="text-decoration:none">LookupEntity</code><a href="#LookupEntity" class="hash-link" aria-label="Direct link to LookupEntity" title="Direct link to LookupEntity">​</a></h3><div class="repositoryDetailsContainer_BPdw"><a class="sourceButton_sEho" href="https://github.com/NeonD00m/feces/blob/main/src/api.luau#L103"><div class="sourceButtonText_Vh0m">&lt;/&gt;</div></a></div><div class="memberString_GwaU"><code class="purple_ieR2">type</code> <code>LookupEntity<!-- --> = </code> <code class="blue_P4bS">number</code></div><div>
+<p>An lookup id for an entity that <em>may</em> exist in <a href="#world"><code>feces.world</code></a>.</p>
+</div><h2 class="anchor anchorWithStickyNavbar_LWe7" id="functions">Functions<a href="#functions" class="hash-link" aria-label="Direct link to Functions" title="Direct link to Functions">​</a></h2><div class="divider_rE5g"></div><h3 class="anchor anchorWithStickyNavbar_LWe7" id="new"><code style="text-decoration:none">new</code><a href="#new" class="hash-link" aria-label="Direct link to new" title="Direct link to new">​</a></h3><div class="repositoryDetailsContainer_BPdw"><a class="sourceButton_sEho" href="https://github.com/NeonD00m/feces/blob/main/src/api.luau#L29"><div class="sourceButtonText_Vh0m">&lt;/&gt;</div></a></div><div class="memberString_GwaU"><code>lib<!-- -->.</code><code class="green_DgR4">new</code><code>(</code><div class="inset_uKQm"><div><code>jecs<!-- -->: </code><code class="blue_P4bS">Jecs</code><code>,</code><span class="inlineDescription_G7Er">-- <span>
+<p>The <code>jecs</code> module instance (require("@rbx/jecs")).</p>
+</span></span></div><div><code>world<!-- -->: </code><code class="blue_P4bS">World</code><code>,</code><span class="inlineDescription_G7Er">-- <span>
+<p>The <code>jecs.World</code> instance to observe and mutate.</p>
+</span></span></div><div><code>group?<!-- -->: </code><code class="blue_P4bS"><a style="text-decoration:underline;color:inherit" href="/feces/api/lib#Group">Group</a></code><code>,</code><span class="inlineDescription_G7Er">-- <span>
+<p>Optional initial group to use for the returned instance (creates default group).</p>
+</span></span></div><div><code>debugPrints?<!-- -->: </code><code class="blue_P4bS">boolean</code><span class="inlineDescription_G7Er">-- <span>
+<p>Enable debug printing.</p>
+</span></span></div></div><code>) → </code><code class="blue_P4bS"><a style="text-decoration:underline;color:inherit" href="/feces/api/feces">feces</a></code><span class="inlineDescription_G7Er">-- <span>
+<p>Returns a new <code>feces</code> instance.</p>
+</span></span></div><div>
+<p>
+  Creates a <code>feces</code> library instance that watches the supplied <code>world</code> for component changes
+  and exposes <code>apply</code>, <code>delta</code>, <code>full</code>, <code>reserve</code>, and other helpers.
+</p>
+<pre class="language-lua"><code class="language-lua"><span class="token comment">-- may be used like this in a module of its own</span>
+<span class="token keyword">local</span> world <span class="token operator">=</span> jecs<span class="token punctuation">.</span><span class="token function">world</span><span class="token punctuation">(</span><span class="token punctuation">)</span>
+<span class="token keyword">local</span> feces <span class="token operator">=</span> lib<span class="token punctuation">.</span><span class="token function">new</span><span class="token punctuation">(</span>jecs<span class="token punctuation">,</span> world<span class="token punctuation">)</span>
+</code></pre>
+</div><div class="divider_rE5g"></div><h3 class="anchor anchorWithStickyNavbar_LWe7" id="combine"><code style="text-decoration:none">combine</code><a href="#combine" class="hash-link" aria-label="Direct link to combine" title="Direct link to combine">​</a></h3><div class="repositoryDetailsContainer_BPdw"><a class="sourceButton_sEho" href="https://github.com/NeonD00m/feces/blob/main/src/api.luau#L40"><div class="sourceButtonText_Vh0m">&lt;/&gt;</div></a></div><div class="memberString_GwaU"><code>lib<!-- -->.</code><code class="green_DgR4">combine</code><code>(</code><div class="inset_uKQm"><div><code>changes<!-- -->: </code><code class="blue_P4bS"><a style="text-decoration:underline;color:inherit" href="/feces/api/lib#Changes">Changes</a></code><code>,</code><span class="inlineDescription_G7Er">-- <span>
+<p>The changes object returned from <code>delta</code>.</p>
+</span></span></div><div><code>deleted<!-- -->: </code><code class="blue_P4bS"><a style="text-decoration:underline;color:inherit" href="/feces/api/lib#Deletes">Deletes?</a></code><span class="inlineDescription_G7Er">-- <span>
+<p>Optional deletes object returned from <code>delta</code>.</p>
+</span></span></div></div><code>) → </code><code class="purple_ieR2">{</code><span><code>[</code><code class="blue_P4bS"><a style="text-decoration:underline;color:inherit" href="https://developer.roblox.com/en-us/api-reference/class/Player" target="_blank" rel="noopener noreferrer">Player<svg xmlns="http://www.w3.org/2000/svg" aria-hidden="true" x="0px" y="0px" viewBox="0 0 100 100" width="15" height="15" class="icon outbound" style="color:gray;vertical-align:middle;margin-left:2px"><path fill="currentColor" d="M18.8,85.1h56l0,0c2.2,0,4-1.8,4-4v-32h-8v28h-48v-48h28v-8h-32l0,0c-2.2,0-4,1.8-4,4v56C14.8,83.3,16.6,85.1,18.8,85.1z"></path> <polygon fill="currentColor" points="45.7,48.7 51.3,54.3 77.2,28.5 77.2,37.2 85.2,37.2 85.2,14.9 62.8,14.9 62.8,22.9 71.5,22.9"></polygon></svg></a></code><code>]</code></span><code>: </code><code class="blue_P4bS"><a style="text-decoration:underline;color:inherit" href="/feces/api/lib#Applyable">Applyable</a></code><code class="purple_ieR2">}</code><span class="inlineDescription_G7Er">-- <span>
+<p>Per-player packets prepared from the changes+deletes.</p>
+</span></span></div><div>
+<p>
+  <code>combine</code> translates <a href="#Changes"><code>Changes</code></a> objects into per-player <a href="api/feces#Applyable"><code>Applyable</code></a> packets,
+  ready to be serialized or sent to each client as one object with all the necessary updates.
+  See the <a href="/feces/docs/setup#simple">simple setup here</a>.
+</p>
+</div><div class="divider_rE5g"></div><h3 class="anchor anchorWithStickyNavbar_LWe7" id="reserve"><code style="text-decoration:none">reserve</code><a href="#reserve" class="hash-link" aria-label="Direct link to reserve" title="Direct link to reserve">​</a></h3><div class="repositoryDetailsContainer_BPdw"><a class="sourceButton_sEho" href="https://github.com/NeonD00m/feces/blob/main/src/api.luau#L61"><div class="sourceButtonText_Vh0m">&lt;/&gt;</div></a></div><div class="memberString_GwaU"><code>lib<!-- -->.</code><code class="green_DgR4">reserve</code><code>(</code><div class="inset_uKQm"><div><code>size<!-- -->: </code><code class="blue_P4bS">number</code><code>,</code><span class="inlineDescription_G7Er">-- <span>
+<p>number of lookup slots to reserve</p>
+</span></span></div><div><code>debugLocation<!-- -->: </code><code class="blue_P4bS">boolean?</code><span class="inlineDescription_G7Er">-- <span>
+<p>whether to use debug.info for debugging</p>
+</span></span></div></div><code>) → </code><code class="blue_P4bS"><a style="text-decoration:underline;color:inherit" href="/feces/api/lib#Group">Group</a></code><span class="inlineDescription_G7Er">-- <span>
+<p>A <code>Group</code> object with its own lookup space.</p>
+</span></span></div><div>
+<p>
+  Reserves a lookup namespace of <code>size</code> entries and returns a <code>Group</code>. The returned <code>Group</code> can be
+  passed to <code>lookup</code>, <code>ref</code>, <code>delta</code>, <code>apply</code>, etc., to isolate replication to that namespace.
+  Use <a href="/feces/api/feces#setGroup"><code>feces:setGroup</code></a> to add a particular entity to a replication group.
+</p>
+<p>
+  The primary goal of these is to allow serializing entites of specific types with a set amount of bits.
+  So for example, you could have a maximum of 8 racecars at a time in your racing game, and you could create
+  a replication group with a size of 8, and then serialize those entities' lookup ids as 3 <em>whole</em> <em><strong>bits</strong></em>.
+</p>
+<p><strong>Or</strong> if you're feeling fancy you can reserve a group then create an instance of feces from it:</p>
+<pre class="language-lua"><code class="language-lua"><span class="token keyword">local</span> group <span class="token operator">=</span> lib<span class="token punctuation">.</span><span class="token function">reserve</span><span class="token punctuation">(</span><span class="token number">24</span><span class="token punctuation">)</span>
+lib<span class="token punctuation">.</span><span class="token function">new</span><span class="token punctuation">(</span>jecs<span class="token punctuation">,</span> myWorld<span class="token punctuation">,</span> group<span class="token punctuation">)</span>
+</code></pre>
+</div></div></article></div><details><summary>Show raw api</summary><pre style="max-width:100%;white-space:pre-wrap">{
+    &quot;functions&quot;: [
+        {
+            &quot;name&quot;: &quot;new&quot;,
+            &quot;desc&quot;: &quot;Creates a `feces` library instance that watches the supplied `world` for component changes\nand exposes `apply`, `delta`, `full`, `reserve`, and other helpers.\n```lua\n-- may be used like this in a module of its own\nlocal world = jecs.world()\nlocal feces = lib.new(jecs, world)\n```&quot;,
+            &quot;params&quot;: [
+                {
+                    &quot;name&quot;: &quot;jecs&quot;,
+                    &quot;desc&quot;: &quot;The `jecs` module instance (require(\&quot;@rbx/jecs\&quot;)).&quot;,
+                    &quot;lua_type&quot;: &quot;Jecs&quot;
+                },
+                {
+                    &quot;name&quot;: &quot;world&quot;,
+                    &quot;desc&quot;: &quot;The `jecs.World` instance to observe and mutate.&quot;,
+                    &quot;lua_type&quot;: &quot;World&quot;
+                },
+                {
+                    &quot;name&quot;: &quot;group?&quot;,
+                    &quot;desc&quot;: &quot;Optional initial group to use for the returned instance (creates default group).&quot;,
+                    &quot;lua_type&quot;: &quot;Group&quot;
+                },
+                {
+                    &quot;name&quot;: &quot;debugPrints?&quot;,
+                    &quot;desc&quot;: &quot;Enable debug printing.&quot;,
+                    &quot;lua_type&quot;: &quot;boolean&quot;
+                }
+            ],
+            &quot;returns&quot;: [
+                {
+                    &quot;desc&quot;: &quot;Returns a new `feces` instance.&quot;,
+                    &quot;lua_type&quot;: &quot;feces&quot;
+                }
+            ],
+            &quot;function_type&quot;: &quot;static&quot;,
+            &quot;source&quot;: {
+                &quot;line&quot;: 29,
+                &quot;path&quot;: &quot;src/api.luau&quot;
+            }
+        },
+        {
+            &quot;name&quot;: &quot;combine&quot;,
+            &quot;desc&quot;: &quot;`combine` translates [`Changes`](#Changes) objects into per-player [`Applyable`](api/feces#Applyable) packets,\nready to be serialized or sent to each client as one object with all the necessary updates.\nSee the [simple setup here](/docs/setup#simple).&quot;,
+            &quot;params&quot;: [
+                {
+                    &quot;name&quot;: &quot;changes&quot;,
+                    &quot;desc&quot;: &quot;The changes object returned from `delta`.&quot;,
+                    &quot;lua_type&quot;: &quot;Changes&quot;
+                },
+                {
+                    &quot;name&quot;: &quot;deleted&quot;,
+                    &quot;desc&quot;: &quot;Optional deletes object returned from `delta`.&quot;,
+                    &quot;lua_type&quot;: &quot;Deletes?&quot;
+                }
+            ],
+            &quot;returns&quot;: [
+                {
+                    &quot;desc&quot;: &quot;Per-player packets prepared from the changes+deletes.&quot;,
+                    &quot;lua_type&quot;: &quot;{ [Player]: Applyable }&quot;
+                }
+            ],
+            &quot;function_type&quot;: &quot;static&quot;,
+            &quot;source&quot;: {
+                &quot;line&quot;: 40,
+                &quot;path&quot;: &quot;src/api.luau&quot;
+            }
+        },
+        {
+            &quot;name&quot;: &quot;reserve&quot;,
+            &quot;desc&quot;: &quot;Reserves a lookup namespace of `size` entries and returns a `Group`. The returned `Group` can be\npassed to `lookup`, `ref`, `delta`, `apply`, etc., to isolate replication to that namespace.\nUse [`feces:setGroup`](/api/feces#setGroup) to add a particular entity to a replication group.\n\nThe primary goal of these is to allow serializing entites of specific types with a set amount of bits.\nSo for example, you could have a maximum of 8 racecars at a time in your racing game, and you could create\na replication group with a size of 8, and then serialize those entities&#x27; lookup ids as 3 *whole* ___bits___.\n\n**Or** if you&#x27;re feeling fancy you can reserve a group then create an instance of feces from it:\n```lua\nlocal group = lib.reserve(24)\nlib.new(jecs, myWorld, group)\n```&quot;,
+            &quot;params&quot;: [
+                {
+                    &quot;name&quot;: &quot;size&quot;,
+                    &quot;desc&quot;: &quot;number of lookup slots to reserve&quot;,
+                    &quot;lua_type&quot;: &quot;number&quot;
+                },
+                {
+                    &quot;name&quot;: &quot;debugLocation&quot;,
+                    &quot;desc&quot;: &quot;whether to use debug.info for debugging&quot;,
+                    &quot;lua_type&quot;: &quot;boolean?&quot;
+                }
+            ],
+            &quot;returns&quot;: [
+                {
+                    &quot;desc&quot;: &quot;A `Group` object with its own lookup space.&quot;,
+                    &quot;lua_type&quot;: &quot;Group&quot;
+                }
+            ],
+            &quot;function_type&quot;: &quot;static&quot;,
+            &quot;source&quot;: {
+                &quot;line&quot;: 61,
+                &quot;path&quot;: &quot;src/api.luau&quot;
+            }
+        }
+    ],
+    &quot;properties&quot;: [],
+    &quot;types&quot;: [
+        {
+            &quot;name&quot;: &quot;Group&quot;,
+            &quot;desc&quot;: &quot;An object representing a reserved or default lookup namespace. The `feces` instance itself behaves as a `Group`\nwhen used as the default/global group.&quot;,
+            &quot;fields&quot;: [
+                {
+                    &quot;name&quot;: &quot;origin&quot;,
+                    &quot;lua_type&quot;: &quot;string&quot;,
+                    &quot;desc&quot;: &quot;Human-readable origin for warnings and debugging (e.g. \&quot;script:23 reserve()\&quot;)&quot;
+                },
+                {
+                    &quot;name&quot;: &quot;size&quot;,
+                    &quot;lua_type&quot;: &quot;number&quot;,
+                    &quot;desc&quot;: &quot;Maximum count of entities for this group&quot;
+                },
+                {
+                    &quot;name&quot;: &quot;lookups&quot;,
+                    &quot;lua_type&quot;: &quot;{ [LocalEntity]: LookupEntity }&quot;,
+                    &quot;desc&quot;: &quot;Mapping local entity -&gt; lookup id&quot;
+                },
+                {
+                    &quot;name&quot;: &quot;refs&quot;,
+                    &quot;lua_type&quot;: &quot;{ [LookupEntity]: LocalEntity }&quot;,
+                    &quot;desc&quot;: &quot;Mapping lookup id -&gt; local entity&quot;
+                }
+            ],
+            &quot;source&quot;: {
+                &quot;line&quot;: 72,
+                &quot;path&quot;: &quot;src/api.luau&quot;
+            }
+        },
+        {
+            &quot;name&quot;: &quot;Applyable&quot;,
+            &quot;desc&quot;: &quot;Represents a per-player packet that can be applied locally.\nUse [`feces:apply`](#apply) to enact the changes in `Applyable` into the [`feces.world`](#world).&quot;,
+            &quot;lua_type&quot;: &quot;{ [Component]: { [LookupEntity]: { value: any, action?: number,}}, __d = { LookupEntity }}&quot;,
+            &quot;source&quot;: {
+                &quot;line&quot;: 79,
+                &quot;path&quot;: &quot;src/api.luau&quot;
+            }
+        },
+        {
+            &quot;name&quot;: &quot;Changes&quot;,
+            &quot;desc&quot;: &quot;Produced by [`feces:delta`](#delta) and accepted by [`feces.combine`](#combine).&quot;,
+            &quot;lua_type&quot;: &quot;{ [Component]: { [Player]: { value: { [LookupEntity]: any }, remove: { LookupEntity }, none: { LookupEntity }, } } }&quot;,
+            &quot;source&quot;: {
+                &quot;line&quot;: 85,
+                &quot;path&quot;: &quot;src/api.luau&quot;
+            }
+        },
+        {
+            &quot;name&quot;: &quot;Deletes&quot;,
+            &quot;desc&quot;: &quot;Produced by [`feces:delta`](#delta)&quot;,
+            &quot;lua_type&quot;: &quot;{ [Player]: { LookupEntity } }&quot;,
+            &quot;source&quot;: {
+                &quot;line&quot;: 91,
+                &quot;path&quot;: &quot;src/api.luau&quot;
+            }
+        },
+        {
+            &quot;name&quot;: &quot;LocalEntity&quot;,
+            &quot;desc&quot;: &quot;An entity in the world at [`feces.world`](#world)&quot;,
+            &quot;lua_type&quot;: &quot;number&quot;,
+            &quot;source&quot;: {
+                &quot;line&quot;: 97,
+                &quot;path&quot;: &quot;src/api.luau&quot;
+            }
+        },
+        {
+            &quot;name&quot;: &quot;LookupEntity&quot;,
+            &quot;desc&quot;: &quot;An lookup id for an entity that *may* exist in [`feces.world`](#world).&quot;,
+            &quot;lua_type&quot;: &quot;number&quot;,
+            &quot;source&quot;: {
+                &quot;line&quot;: 103,
+                &quot;path&quot;: &quot;src/api.luau&quot;
+            }
+        }
+    ],
+    &quot;name&quot;: &quot;lib&quot;,
+    &quot;desc&quot;: &quot;The feces library only provides 3 functions\n- [`new`](#new) -- creates new feces class\n- [`combine`](#combine) -- combines `Changes` and `Deletes` objects into one [`Applyable`](api/feces#Applyable) per player\n- [`reserve`](#reserve) -- creates a `Group` structure that can be used by any feces object\n\nAlso, [`combine`](#combine) and [`reserve`](#reserve) can both be used from an instance of [`feces`](/api/feces)\nvia `feces.combine` and `feces.reserve` respectively (using . operator instead of :)&quot;,
+    &quot;source&quot;: {
+        &quot;line&quot;: 11,
+        &quot;path&quot;: &quot;src/api.luau&quot;
+    }
+}</pre></details></div><div class="col col--3"><div class="tableOfContents_bqdL thin-scrollbar"><ul class="table-of-contents table-of-contents__left-border"><li><a href="#types" class="table-of-contents__link toc-highlight">Types</a><ul><li><a href="#Applyable" class="table-of-contents__link toc-highlight">Applyable</a></li><li><a href="#Changes" class="table-of-contents__link toc-highlight">Changes</a></li><li><a href="#Deletes" class="table-of-contents__link toc-highlight">Deletes</a></li><li><a href="#Group" class="table-of-contents__link toc-highlight">Group</a></li><li><a href="#LocalEntity" class="table-of-contents__link toc-highlight">LocalEntity</a></li><li><a href="#LookupEntity" class="table-of-contents__link toc-highlight">LookupEntity</a></li></ul></li><li><a href="#functions" class="table-of-contents__link toc-highlight">Functions</a><ul><li><a href="#combine" class="table-of-contents__link toc-highlight">.combine</a></li><li><a href="#new" class="table-of-contents__link toc-highlight">.new</a></li><li><a href="#reserve" class="table-of-contents__link toc-highlight">.reserve</a></li></ul></li></ul></div></div></div></div></main></div></div><footer class="footer footer--dark"><div class="container container-fluid"><div class="footer__bottom text--center"><div class="footer__copyright">Copyright © 2025 NeonD00m. Built with Moonwave and Docusaurus</div></div></div></footer></div>
+</body>
+</html>
