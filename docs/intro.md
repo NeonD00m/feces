@@ -4,7 +4,7 @@ sidebar_position: 1
 
 # Introduction
 
-Feces is a library for replicating jecs entities and components. Here are some examples:
+Feces (_"Fast Entity Component Export System"_) is a library for replicating jecs entities and components. Here are some examples:
 ```lua
 local entity = world:entity()
 local Transform = world:component()

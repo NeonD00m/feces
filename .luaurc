@@ -6,7 +6,7 @@
     "pkg": "./lune_packages/",
     "feces": "./feces/",
     "test": "./test/",
-    "rbx": "./roblox_packages/"
+    "rbx": "./luau_packages/"
   },
   "lintErrors": true,
   "typeErrors": true,
