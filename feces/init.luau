@@ -12,7 +12,7 @@ local added, changed, removed, deleted = hooks.added, hooks.changed, hooks.remov
 local ref, lookup, reserve, setGroup, getGroup = groups.ref, groups.lookup, groups.reserve, groups.setGroup, groups.getGroup
 
 local function debug(self: types.Feces, ...: any)
-    if not self.DEBUG then
+    if not self._debug then
         return
     end
     print(...)
@@ -35,7 +35,7 @@ local lib = {
             jecs = jecs,
             world = world,
             replicated = replicated,
-            DEBUG = debugPrints,
+            _debug = debugPrints,
 
             queries = {
                 single = world:query(replicated):cached(),
@@ -167,7 +167,7 @@ local lib = {
         --     local prev = removeFromGroup(feces, ent)
         --     feces:debug(`->\tgroup removed: {ent}[grouped] = ({prev and prev.origin}) deleted`)
         -- end)
-        
+
         return feces :: types.Feces
     end
 }

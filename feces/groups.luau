@@ -53,9 +53,9 @@ end
 local function ref(self: types.Feces, key: types.LookupEntity?, group: types.Group?): types.LocalEntity
 	local world = self.world
 	group = group or self
-	local entity: types.LocalEntity = if not key then (world:entity() :: any) else group.refs[key]
-	
-	if not group.lookups[entity] then
+	local entity: types.LocalEntity = if not key then (world:entity() :: any) else (group :: types.Group).refs[key]
+
+	if not (group :: types.Group).lookups[entity] then
 		setGroup(self, group, entity)
 	end
 
@@ -68,21 +68,23 @@ local function lookup(self: types.Feces, entity: types.LocalEntity?, group: type
 	group = group or self
 	if not entity then
 		entity = world:entity() :: any
-		key = _addToGroup(self, group, entity)
+		key = _addToGroup(self, (group :: types.Group), entity :: any)
 	else
-		key = group.lookups[entity]
+		key = (group :: types.Group).lookups[entity]
 		if not key then
-			key = _addToGroup(self, group, entity)
+			key = _addToGroup(self, (group :: types.Group), entity)
 		end
 	end
 
 	return key
 end
 
-local function reserve(size: number): types.Group
-	local scrpt, line, name = debug.info(2, "sln")
-	local origin = `{scrpt}:{line} {name}()`
-    
+local function reserve(size: number, debugLocation: boolean?): types.Group
+	local origin = "unknown"
+	if debug then
+	    local scrpt, line, name = debug.info(2, "sln")
+	    origin = `{scrpt}:{line} {name}()`
+	end
 	return {
 		origin = origin,
 		size = size,
@@ -97,4 +99,4 @@ return {
     ref = ref,
     lookup = lookup,
     reserve = reserve,
-} 
+}

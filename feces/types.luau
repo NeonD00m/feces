@@ -76,11 +76,11 @@ export type Applyable = {
 export type Lib = {
 	new: (Jecs, World, Group?, boolean?) -> Feces,
 	combine: (Changes, Deletes?) -> { [TestPlayer]: Applyable },
-	reserve: (number) -> Group, -- creates a group of entities with a separate lookup 
+	reserve: (number) -> Group, -- creates a group of entities with a separate lookup
 }
 
 export type Feces = Lib & Group & {
-	DEBUG: boolean?,
+	_debug: boolean?,
 	jecs: Jecs,
 	world: World,
 	replicated: Component<PlayerObject>,
@@ -93,7 +93,7 @@ export type Feces = Lib & Group & {
 	_deleted: PendingDeletes,
 	_storages: Storages,
 	_grouped: { [LocalEntity]: Group },
-	
+
 	debug: (self: Feces, ...any) -> (),
 	lookup: (self: Feces, key: LocalEntity?, group: Group?) -> LookupEntity,
 	ref: (self: Feces, key: LookupEntity?, group: Group?) -> LocalEntity,

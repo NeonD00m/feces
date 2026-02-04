@@ -6,10 +6,10 @@ local function apply(self: types.Feces, delta: types.Applyable, group: types.Gro
 	end
 	local hasGroup = group ~= nil
 	group = group or self
-	for component, entities in delta do
+	for component, entities in delta :: any do
 		if component == types.Delete then
 			for _, lookupEntity: types.LookupEntity in entities do
-				local entity: types.LocalEntity? = if hasGroup then group.refs[lookupEntity] else self:ref(lookupEntity)
+				local entity: types.LocalEntity? = if hasGroup then (group :: types.Group).refs[lookupEntity] else self:ref(lookupEntity)
 				if entity == nil then
 					continue
 				end
@@ -21,15 +21,13 @@ local function apply(self: types.Feces, delta: types.Applyable, group: types.Gro
 			continue
 		end
 
-		local newEntities: { [types.LocalEntity]: true } = {}
-
 		for lookupEntity, info in entities do
 			local action, value = info.action, info.value
-			local existed = group.refs[lookupEntity]
+			local existed = (group :: types.Group).refs[lookupEntity]
 			local entity: types.LocalEntity = self:ref(lookupEntity, group)
 
 			if not existed and self._hooks.added then
-				newEntities[entity] = true
+			    self._hooks.added(entity)
 			end
 
 			if action == types.Remove then
@@ -38,16 +36,10 @@ local function apply(self: types.Feces, delta: types.Applyable, group: types.Gro
 				end
 				self.world:remove(entity, component)
 			end
-			
+
 			local newValue = if action == types.None then nil else value
 			if self._hooks.changed then
 				self._hooks.changed(entity, component, newValue)
-			end
-		end
-
-		if self._hooks.added then
-			for entity, _ in newEntities do
-				self._hooks.added(entity)
 			end
 		end
 	end
