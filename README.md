@@ -2,7 +2,7 @@
     <img src="https://raw.githubusercontent.com/NeonD00m/feces/refs/heads/main/images/thelogo.png" width="600" />
 </div>
 
-#### _"Fast Entity Component Export System"_
+#### _"Fast Entity Component Export System" - By Killer Games_
 
 A generalized replication system for [jecs](https://github.com/ukendio/jecs) that allows for easy and fast replication of components.
 
@@ -10,7 +10,7 @@ A generalized replication system for [jecs](https://github.com/ukendio/jecs) tha
 
 <br>
 
-### Examples
+### Basics
 
 ```luau
 local entity = world:entity()

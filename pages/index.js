@@ -8,24 +8,28 @@ import styles from "./index.module.css";
 
 const FEATURES = [
   {
-    image: "https://raw.githubusercontent.com/NeonD00m/feces/refs/heads/main/images/basics.png",
+    image:
+      "https://raw.githubusercontent.com/NeonD00m/feces/refs/heads/main/images/basics.png",
     title: "Integrated with Jecs",
     description: (
       <>
         One line to replicate either a specific component or a whole entity!
         <br />
         <br />
-        In the example you can see that we show how both methods would work, though in reality the
-        pairs method is redundant if you are also adding the replicated component straight to the entity.
+        In the example you can see that we show how both methods would work,
+        though in reality the pairs method is redundant if you are also adding
+        the replicated component straight to the entity.
         <br />
         <br />
-        Targeting certain components to replicate is very useful so that on the server, you do not
-        have to split up entities into one public version, and one non-replicating version.
+        Targeting certain components to replicate is very useful so that on the
+        server, you do not have to split up entities into one public version,
+        and one non-replicating version.
       </>
     ),
   },
   {
-    image: "https://raw.githubusercontent.com/NeonD00m/feces/refs/heads/main/images/players.png",
+    image:
+      "https://raw.githubusercontent.com/NeonD00m/feces/refs/heads/main/images/players.png",
     title: "Player-specific replication",
     description: (
       <>
@@ -46,20 +50,22 @@ const FEATURES = [
     ),
   },
   {
-    image: "https://raw.githubusercontent.com/NeonD00m/feces/refs/heads/main/images/visual-explanation.png",
+    image:
+      "https://raw.githubusercontent.com/NeonD00m/feces/refs/heads/main/images/visual-explanation.png",
     title: "Intuitive Concepts",
     description: (
       <>
         So intuitive that even a gorilla can get the idea!
         <br />
         <br />
-        Be surprised by how fast you can get your project up and running with feces handling your
-        replication needs.
+        Be surprised by how fast you can get your project up and running with
+        feces handling your replication needs.
         <br />
         <br />
-        In the initial stages of development when we started actually making a game with feces,
-        we were kind of shocked by how fast we got features working, and thought we were missing
-        something. We weren't, that's just just the developer experience with feces!
+        In the initial stages of development when we started actually making a
+        game with feces, we were kind of shocked by how fast we got features
+        working, and thought we were missing something. We weren't, that's just
+        just the developer experience with feces!
       </>
     ),
   },
@@ -105,16 +111,32 @@ function HomepageHeader() {
             alt="feces"
           />
         </h1>
-        <p className="hero__subtitle" style={{color: "#a2a2a5", fontWeight: "600"}}>{siteConfig.tagline}</p>
-        <div className={styles.buttons} style={{marginTop: "1.5rem"}}>
+        <p
+          className="hero__subtitle"
+          style={{
+            color: "#a2a2a5",
+            fontSize: "1.5rem",
+            fontWeight: "300",
+            marginTop: "-1rem",
+          }}
+        >
+          (a.k.a "Fast Entity Component Export System")
+        </p>
+        <p
+          className="hero__subtitle"
+          style={{ color: "#a2a2a5", fontWeight: "600" }}
+        >
+          {siteConfig.tagline}
+        </p>
+        <div className={styles.buttons} style={{ marginTop: "1.5rem" }}>
           <Link
             className="button button--secondary button--lg"
             to="/docs/intro"
             style={{
-                borderRadius: "9999px",
-                color: "white",
-                backgroundColor: "blue",
-                borderColor: "blue"
+              borderRadius: "9999px",
+              color: "white",
+              backgroundColor: "blue",
+              borderColor: "blue",
             }}
           >
             Get Started
@@ -123,10 +145,10 @@ function HomepageHeader() {
             className="button button--secondary button--lg"
             to="/api/feces"
             style={{
-                borderRadius: "9999px",
-                color: "white",
-                backgroundColor: "#323234",
-                borderColor: "#323234"
+              borderRadius: "9999px",
+              color: "white",
+              backgroundColor: "#323234",
+              borderColor: "#323234",
             }}
           >
             API Reference

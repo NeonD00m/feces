@@ -4,7 +4,7 @@ sidebar_position: 1
 
 # Introduction
 
-Feces is a library for replicating jecs entities and components. Here are some examples:
+Feces (_"Fast Entity Component Export System"_) is a library for replicating jecs entities and components. Here are some examples:
 ```lua
 local entity = world:entity()
 local Transform = world:component()
@@ -31,5 +31,13 @@ end)
 ```
 
 ## Installation
-Currently only available on [pesde](https://pesde.dev/packages/killergg/feces).
+Currently only available on [pesde](https://pesde.dev/packages/killergg/feces_core).
 
+
+## Details
+
+The goal of feces is not to directly handle your replication with remotes, but to provide the simplest, most efficient, and flexible way to replicate data between jecs worlds.
+
+Feces requires a couple specific conditions to work correctly:
+1. The components should all be created before a feces object is created.
+2. The components should all be the same entity ids, basically just create the replicated components in the same order on all worlds.

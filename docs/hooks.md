@@ -20,10 +20,6 @@ The added callback is called *after* all the components received are set to
 a newly replicated entity. This is because there has to be at least one replicating
 component under an entity for it to be added through feces.
 
-:::warning
-This added hook will be called on entities *after* calling changed hooks on each of their components, so do not expect changed to happen after added.
-:::
-
 ```lua
 feces.added(function(entity)
     if world:has(entity, PlayerTag) then

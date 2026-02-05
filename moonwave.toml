@@ -8,14 +8,14 @@ classOrder = [["feces"]]
 [docusaurus]
 onBrokenLinks = "throw"
 onBrokenMarkdownLinks = "warn"
-favicon = "images/newlogo.png"
+favicon = "images/thelogo.png"
 
 # From git:
 organizationName = "NeonD00m"
 projectName = "feces"
 url = "https://neond00m.github.io"
 baseUrl = "/feces/"
-tagline = "Generalized Replication for jecs"
+tagline = "Simple replication that puts the power in your hands."
 
 # [navbar]
 # hideableSidebar = true
@@ -25,7 +25,7 @@ title = ""
 
 [navbar.logo]
 alt = "feces"
-src = "https://raw.githubusercontent.com/NeonD00m/feces/refs/heads/main/images/newlogo.png"
+src = "https://raw.githubusercontent.com/NeonD00m/feces/refs/heads/main/images/thelogo.png"
 
 # [[navbar.items]]
 # href = "https://discord.gg/eJAHVeEPkq"
